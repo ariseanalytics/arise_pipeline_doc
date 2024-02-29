@@ -1,12 +1,12 @@
 # 便利なテンプレートの紹介
 
-ARISE-PIPIELINEでは、IFが明確に定められている各種Params（ModelPipelineParams、PostFuncParams等）を定義することで、パイプラインを構築する。KFoldによるクロスバリデーションを実行するTrainValSplitParamsなど、良く用いられることが想定されるParamsについてはそれらを簡単に生成可能なテンプレートをarise_pipeline/templates以下に用意している。ここではその一部を紹介する。
+ARISE-PIPIELINEでは、IFが明確に定められている各種Params（`ModelPipelineParams`、`PostFuncParams`等）を定義することで、パイプラインを構築する。`KFold`によるクロスバリデーションを実行する`TrainValSplitParams`など、良く用いられることが想定されるParamsについてはそれらを簡単に生成可能なテンプレートを`arise_pipeline.templates`以下に用意している。ここではその一部を紹介する。また、各プロジェクトで構築されたParamsのうち、汎用的なものをテンプレート化していくことによって、プロジェクト横断で共通のモジュールを構築していくことを目指していきたいので、各チームで構築したものはぜひ運営にも共有していただきたい。
 
 
 ## クロスバリデーションの実施
 
 ### できること
-- KFold, GroupKFold, StratifiedKFoldによるクロスバリデーションの実施
+- `KFold`, `GroupKFold`, `StratifiedKFold`によるクロスバリデーションの実施
 
 
 ### 使用するメソッド等
@@ -66,7 +66,7 @@ def stratifiedkfold_split(
     return skfold.transform(data)
 ```
 
-上記の関数の引数のうちdata以外は、同名のパラメータをパラメータファイルから参照する仕組みとなっているため、次の3つのパラメータをパラメータファイルに記載する必要がある。
+上記の関数の引数のうち`data`以外は、同名のパラメータをパラメータファイルから参照する仕組みとなっているため、次の3つのパラメータをパラメータファイルに記載する必要がある。
 
 ```yaml
 numFolds: 5, # fold数
@@ -92,7 +92,7 @@ seed: 42, # seed値
 
 #### 0. 前提条件
 
-まず、こちらを利用するに際して、以下の条件を満たすModelPipelineParamsを設定してある必要がある。
+まず、こちらを利用するに際して、以下の条件を満たす`ModelPipelineParams`を設定してある必要がある。
 
 【前提条件】
 - `ModelPipelineParams`中の`model_params`に与える`build_func`については以下2つの処理を内包したPipelineを生成する関数となっていること
