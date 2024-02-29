@@ -39,6 +39,7 @@ skf_params = create_stratifiedkfold_split_params()
 ```python
 from arise_pipeline.ml_pipeline.main_params import ModelPipelineParams
 
+
 model_pipeline_params = ModelPipelineParams(
     ...,
     train_val_split_params=skf_params
