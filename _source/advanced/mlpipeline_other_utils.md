@@ -19,28 +19,91 @@
 
 #### 全データの確認
 中間生成物含め、インプット・アウトプット全てのデータカタログ情報を取得するには、 `MlPipeline.data_catalog`を利用すればよい。
+
+- サンプルコード
 ```python
 ml_pipeline.data_catalog()
 ```
 
+データセット名がkey、データの詳細がvalueとなる辞書(`dict[str, Any]`)が返ってくる。
+
+- 実行結果
+```python
+{
+    "iris_targets_processed_train": {
+        "type": "arise_pipeline.datasets.spark.SparkDataset",
+        "filepath": "s3a://hoge/fuga/04_feature/iris_targets_processed_train",
+        "save_args": {"sep": ",", "header": True, "mode": "overwrite"},
+        "load_args": {"header": True, "inferSchema": True},
+        "file_format": "parquet",
+    },
+    "iris_targets_processed_test": {
+        "type": "arise_pipeline.datasets.spark.SparkDataset",
+        "filepath": "s3a://hoge/fuga/04_feature/iris_targets_processed_test",
+        "save_args": {"sep": ",", "header": True, "mode": "overwrite"},
+        "load_args": {"header": True, "inferSchema": True},
+        "file_format": "parquet",
+    },
+    ...
+}
+```
+
+
+#### 特定のデータカタログの確認
+特定のデータのみ確認する場合は `MlPipeline.data_catalog`の引数`names`にデータセット名のリストを渡してあげればよい。(複数可)
+
+- サンプルコード
+```python
+ml_pipeline.data_catalog(names=["iris_targets_processed_test"])
+```
+
+- 実行結果
+```python
+{
+    "iris_targets_processed_test": {
+        "type": "arise_pipeline.datasets.spark.SparkDataset",
+        "filepath": "s3a://hoge/fuga/04_feature/iris_targets_processed_test",
+        "save_args": {"sep": ",", "header": True, "mode": "overwrite"},
+        "load_args": {"header": True, "inferSchema": True},
+        "file_format": "parquet",
+    }
+}
+```
+
+
 #### インプットの確認
-インプットデータのみを確認したい場合は以下コマンドを叩けばよい。
+インプットデータのみを確認したい場合は以下コマンドを叩けばよい。実行結果は`MlPipeline.data_catalog`と同様のフォーマットであるため割愛。
+
+- サンプルコード
 ```python
 ml_pipeline.inputs()
 ```
 
 また、データカタログではなく名前だけ確認する場合は以下コマンドを用いると、名前だけ取り出せる。
+
+- サンプルコード
 ```python
 ml_pipeline.input_names()
 ```
 
+インプット名の集合(`set[str]`)が返ってくる。
+
+- 実行結果
+```python
+{"iris_features", "iris_labels", "iris_targets"}
+```
+
 #### アウトプットの確認
 アウトプットデータ（中間生成物含む）のみを確認したい場合はインプットの時と同じ要領で以下コマンドを叩けばよい。
+
+- サンプルコード
 ```python
 ml_pipeline.outputs()
 ```
 
 名前のみの取り出しの場合は以下コマンドを叩く。
+
+- サンプルコード
 ```python
 ml_pipeline.output_names()
 ```
@@ -55,15 +118,20 @@ ml_pipeline.output_names()
 ### 説明
 インプットデータやアウトプットデータについて、データカタログ上のデータセット名を指定することで、読み込むことができる。これによって、成果物のデータフレームを直接操作して中身を確認したりすることができる。
 
+- サンプルコード
 ```python
-val_preds_sdf = ml_pipeline.load("val_preds")
+test_scores = ml_pipeline.load(name="test_scores")
+test_scores
+```
+
+- 実行結果
+```python
+[03/05/24 07:51:31] INFO Loading data from 'test scores' (JSONDataSet)...
+{'accuracy': 0.8, 'f1': 0.8}
 ```
 
 データセット名が不明な場合は、[データカタログの確認](#データカタログの確認)で紹介した各種メソッドを用いて確認すると良い。
 
-```python
-ml_pipeline.outputs()
-```
 
 ## SparkSessionの起動と停止
 ### できること
@@ -79,15 +147,30 @@ ml_pipeline.outputs()
 
 #### 起動
 事前にビルドしておき、以下コマンドを叩けば、SparkSessionが起動する。
+
+- サンプルコード
 ```python
-ml_pipeline.make(tags="train")
 spark = ml_pipeline.init_spark_session()
+```
+
+- 実行結果
+```python
+...
+[03/05/24 07:51:31] INFO SparkSessionを起動しました.
+...
 ```
 
 #### 停止
 停止するには以下のように実行。
+
+- サンプルコード
 ```python
 ml_pipeline.stop_spark_session()
+```
+
+- 実行結果
+```python
+[03/05/24 07:52:30] INFO SparkSessionを停止しました.
 ```
 
 ### 注意事項
@@ -111,22 +194,64 @@ ml_pipeline.stop_spark_session()
 ビルドされたパイプラインが実際にどのようなノードの集合で形成されているかを確認するためのメソッドがいくつかある。
 
 #### パイプラインの全体感の確認
-パイプライン全体を確認するためには以下コマンドを実行すればよい。なお、`print`で表示した方が改行の関係で見やすいので、そちらを利用することをすすめる。将来的にはもう少しノードの関係を見やすい画像形式での表示などを考えている。
+パイプライン全体を確認するためには以下コマンドを実行すればよい。
 
+- サンプルコード
 ```python
-ml_pipeline.show()
+print(ml_pipeline.show())
+```
+
+なお、`print`で表示した方が改行の関係で見やすいので、そちらを利用することをすすめる。将来的にはもう少しノードの関係を見やすい画像形式での表示などを考えている。現状は以下のようにパイプライン全体の「Inputs」「Outputs」並びに各ノード名が縦に並ぶ形となっている。
+
+- 実行結果
+```python
+#### Pipeline execution order ####
+Inputs: iris_features, iris_labels, iris_targets, parameters, ....
+feature_sdf_func([iris_features,iris_labels,params:featureCols,...]) -> [iris_features_processed_test]
+...
+Outputs: test_scores, train_scores, val_scores
+##################################
 ```
 
 #### ノードの詳細の確認
 各ノードの詳細を確認するためには以下コマンドを使うと良い。
 
+- サンプルコード
 ```python
 ml_pipeline.nodes()
 ```
 
+以下のようにノード名がkey、ノードの詳細がvalueとなる辞書(`dict[str, Any]`)が返ってくる。`'feature_sdf_func([iris_features,iris_labels,params:featureCols,params:featuresCols,params:featuresVACol]) -> [iris_features_processed_test]'`がノード名であることに注意。
+
+- 実行結果
+```python
+{
+    'feature_sdf_func([iris_features,iris_labels,params:featureCols,params:featuresCols,params:featuresVACol]) -> [iris_features_processed_test]': {
+        'func_name' : 'feature_sdf_func',
+        'inputs': ['iris_features', 'iris_labels', 'params:featureCols', 'params:featuresVACol'],
+        'outputs': ['iris_features_processsed_test'],
+        'tags': ['predict'],
+        'procs': ['pre', 'feature'],
+    },
+    ...
+}
+```
+
+
 #### ノード名の確認
 ノード名だけを確認したい場合は、以下コマンドを使うと良い。
 
+- サンプルコード
 ```python
 ml_pipeline.node_names()
+```
+
+ノード名の集合(`set[str]`)が返ってくる。
+
+- 実行結果
+```python
+{
+    'feature_sdf_func([iris_features,iris_labels,params:featureCols,params:featuresCols,params:featuresVACol]) -> [iris_features_processed_test]',
+    ...
+}
 ```
