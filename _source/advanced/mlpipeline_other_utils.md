@@ -132,55 +132,6 @@ test_scores
 
 データセット名が不明な場合は、[データカタログの確認](#データカタログの確認)で紹介した各種メソッドを用いて確認すると良い。
 
-
-## SparkSessionの起動と停止
-### できること
-- MlPipelineクラスを介したSparkSessionの起動や停止
-
-### 利用メソッド
-- `MlPipeline.init_spark_session`
-
-- `MlPipeline.stop_spark_session`
-
-### 説明
-`MlPipeline`クラスはSparkHookが有効になっている場合、`run`実行時に自動でSparkSessionを起動してくれ、終了時に自動で停止してくれるが、これを実行前後などで手動で起動・停止したい場合には`MlPipeline.init_spark_session`あるいは`MlPipeline.stop_spark_session`を叩けば良い。
-
-#### 起動
-事前にビルドしておき、以下コマンドを叩けば、SparkSessionが起動する。
-
-- サンプルコード
-```python
-spark = ml_pipeline.init_spark_session()
-```
-
-- 実行結果
-```python
-...
-[03/05/24 07:51:31] INFO SparkSessionを起動しました.
-...
-```
-
-#### 停止
-停止するには以下のように実行。
-
-- サンプルコード
-```python
-ml_pipeline.stop_spark_session()
-```
-
-- 実行結果
-```python
-[03/05/24 07:52:30] INFO SparkSessionを停止しました.
-```
-
-### 注意事項
-- こちらを利用する際には以下二つの条件を満たしておく必要がある
-    1. 以下のいずれかの方法でSparkHookの設定ファイルを読み込ませること
-        - `conf_path`を指定し,対象ディレクトリに「spark.yaml(.yml)」を含ませる。
-        - `spark_conf`で直接yamlファイルを指定す
-    1. `MlPipeline.make`によりMlPipelineをビルドさせておくこと
-
-
 ## パイプライン・ノードの確認
 ### できること
 - ビルドされたパイプライン・ノードの確認
@@ -255,3 +206,48 @@ ml_pipeline.node_names()
     ...
 }
 ```
+
+## SparkSessionの起動と停止
+### できること
+- MlPipelineクラスを介したSparkSessionの起動や停止
+
+### 利用メソッド
+- `MlPipeline.init_spark_session`
+
+- `MlPipeline.stop_spark_session`
+
+### 説明
+`MlPipeline`クラスはSparkHookが有効になっている場合、`run`実行時に自動でSparkSessionを起動してくれ、終了時に自動で停止してくれるが、これを実行前後などで手動で起動・停止したい場合には`MlPipeline.init_spark_session`あるいは`MlPipeline.stop_spark_session`を叩けば良い。
+
+#### 起動
+事前にビルドしておき、以下コマンドを叩けば、SparkSessionが起動する。
+
+- サンプルコード
+```python
+spark = ml_pipeline.init_spark_session()
+```
+
+- 実行結果
+```python
+...
+[03/05/24 07:51:31] INFO SparkSessionを起動しました.
+...
+```
+
+#### 停止
+停止するには以下のように実行。
+
+- サンプルコード
+```python
+ml_pipeline.stop_spark_session()
+```
+
+- 実行結果
+```python
+[03/05/24 07:52:30] INFO SparkSessionを停止しました.
+```
+
+### 注意事項
+- こちらを利用する際には、以下のいずれかの方法でSparkHookの設定ファイルを読み込ませておくこと
+    - `conf_path`を指定し,対象ディレクトリに「spark.yaml(.yml)」を含ませる
+    - `spark_conf`で直接yamlファイルを指定する
