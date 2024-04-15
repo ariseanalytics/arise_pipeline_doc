@@ -26,7 +26,26 @@ ARISEでは様々な分析がプロジェクトごとにおこなわれている
 - 基盤となる分散処理フレームワークやライブラリ
 - 成果物管理の統一
 - コードの実行手順
-  
+
+## ARISE-PIPELINEの構成要素
+ARISE-PIPELINEモジュールには「マートパイプライン」と「MLパイプライン」の2つのパイプラインで構成されている。
+それぞれの役割は下の表のとおり。
+
+| 分析ステップ | パイプライン |
+| ---- | ---- |
+| 要件定義 | (非対象) |
+| データ収集 | マートパイプライン |
+| マート作成 | マートパイプライン |
+| モデル用前処理 | MLパイプライン |
+| モデリング | MLパイプライン |
+| 結果収集 | MLパイプライン |
+| 報告 | (非対象) |
+| 納品 | (非対象) |
+
+## 全体構成
+ユーザーは「Config」「Params」「tag(MLパイプラインのみ)」を用意してパイプラインのインスタンスを作成することでパイプラインの実行が可能となる。実行すると保存先を自動生成し，各種データを保存する。
+ ![全体構成](architect.png)
+
 # Layered Thinkingとは
 ## 概要
 [Layered Thinking](https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc7 "The importance of layered thinking in data engineering")
@@ -46,15 +65,15 @@ ARISEでは様々な分析がプロジェクトごとにおこなわれている
 ARISE-PIPELINEでも上記の考え方に則って2つのパイプラインを構築した。各レイヤーとパイプラインの対応表は下記。
 
 | レイヤー名     | パイプライン名    |
-|:-----------    |:------------      |
+|:-----------    |:------------    |
 | 01_raw         |マートパイプライン |
 | 02_intermediate|マートパイプライン |
 | 03_primary     |マートパイプライン |
-| 04_feature     |MLパイプライン     |
-| 05_model_input |MLパイプライン     |
-| 06_models      |MLパイプライン     |
-| 07_model_output|MLパイプライン     |
-| 08_reporting   |MLパイプライン     |
+| 04_feature     |MLパイプライン    |
+| 05_model_input |MLパイプライン    |
+| 06_models      |MLパイプライン    |
+| 07_model_output|MLパイプライン    |
+| 08_reporting   |MLパイプライン    |
 
 各レイヤーで行うべき処理等については[こちら](https://ariseanalytics.atlassian.net/wiki/spaces/CADMAULTVWG/pages/2903474412
-"The importance of layered thinking in data engineering")のページに記載している。ARISE-PIPELINEを用いて実装を行う際にはこちらのルールにレイヤーごとに行うべき処理を把握し，その内容を実装してほしい。
+"The importance of layered thinking in data engineering")のページに記載している。ARISE-PIPELINEを用いて実装を行う際にはこちらのルールにレイヤーごとに行うべき処理を把握し，その内容を実装すること。
