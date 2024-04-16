@@ -1,34 +1,31 @@
 # MLパイプラインの基本説明
 本ページではARISE-PIPELINEモジュールにあるMLパイプラインの基本的な内容に関して説明する。
 ## 全体感
-
-以下がMLパイプラインの全体構成図となっている。
+以下がMLパイプラインの全体構成図となっている。ユーザーはConfig，Params,Tagの三つを準備する。
 ![MLパイプライン構成図](mlpipeline_architect.png)
-
 
 ## ユーザー準備
 ### Config
 設定値を管理するyamlファイルを準備。各yamlファイルの詳細については個別のページを参照。
-
 
 ### Params
 #### 概要
 MLパイプラインには個別の役割を持つ6つのParamsが存在する。これらを組み合わせることで前処理-学習-予測-評価をワンストップで実行可能。
 Params名とそれぞれの役割は以下表のとおり。
 
-| Params名 | 役割 | 必要な実装 |
+| プロセス名 | 役割 | 必要な実装 |
 | ---- | ---- |  ---- |
-| TargetUserPipelineParams | データの縦幅を決定 |入力データ名<br>出力データ名<br>縦幅フィルターfunction
-| FeaturePipelineParams | 特徴量データの前処理 |入力データ名<br>出力データ名<br>ジョインキーの指定<br>特徴量の前処理function
-| LabelPipelineParams | ラベルデータの前処理 |入力データ名<br>出力データ名<br>ジョインキーの指定<br>ラベルの前処理function
-| JoinPipelineParams | 縦幅・特徴量・ラベルの結合 |特になし
-| ModelPipelineParams | モデルの学習・予測 |データの分割方法<br>追加の前処理<br>モデル<br>チューニング内容
-| PostPipelineParams | 評価・一定形式のデータ整形 |評価方法<br>後処理<br>可視化方法
+| TargetUserPipeline | データの縦幅を決定 |入力データ名<br>出力データ名<br>縦幅フィルターfunction
+| FeaturePipeline | 特徴量データの前処理 |入力データ名<br>出力データ名<br>ジョインキーの指定<br>特徴量の前処理function
+| LabelPipeline | ラベルデータの前処理 |入力データ名<br>出力データ名<br>ジョインキーの指定<br>ラベルの前処理function
+| JoinPipeline | 縦幅・特徴量・ラベルの結合 |特になし
+| ModelPipeline | モデルの学習・予測 |データの分割方法<br>追加の前処理<br>モデル<br>チューニング内容
+| PostPipeline | 評価・一定形式のデータ整形 |評価方法<br>後処理<br>可視化方法
 
 また，上記に加えてPathParamsがある。
 
 #### 注意点
-各Paramsではユーザー定義functionを受け付ける仕様になっているが，functionの引数の種類として下記の3種類が存在する。
+各Pipelineを定義するために必要なParamsではユーザー定義functionを受け付ける仕様になっているが，functionの引数の種類として下記の3種類が存在する。
 
 | 引数種別 | 役割 |
 | ---- | ---- |  
@@ -42,7 +39,7 @@ Params名とそれぞれの役割は以下表のとおり。
 | `data_type` | str| 関数に入力するデータの種類。値はtrain/val/testのいずれか。|TargetUserPipeline<br>FeaturePipeline<br>LabelPipeline<br>PostPipeline|
 | `output_path` | str |パイプラインの出力を保存するディレクトリパス。各関数の出力先として適切なレイヤーに対応する**サブディレクトリの絶対パスを記載する。**※アウトプットパスのルートではない|raw2inter<br>inter2primary<br>primary2primary<br>PostPipeline|
 
-#### PathParamsParams
+#### PathParams
 MLパイプラインで利用するConfigファイルやアウトプットを設置するパスまわりを管理するParamsが`MlPathParams`である。
 ※マートパイプラインには`MartPathParams`があるが現時点では中身は全く同じ。
 
@@ -55,13 +52,20 @@ MLパイプラインで利用するConfigファイルやアウトプットを設
   - `parameters_yaml_path`：conf配下のパラメータファイルを個別で指定したいときに利用
   - `catalog_yaml_path`：conf配下のカタログファイルを個別で指定したいときに利用
   - `spark_yaml_path`：conf配下のsparkファイルを個別で指定したいときに利用
-#### TargetUserPipelineParams
-- データの縦幅を決定(filter)するプロセス。catalog.ymlに記載されたデータをもとに，trainとtestの縦幅を決める
+#### TargetUserPipeline
+- データの縦幅を決定(filter)するプロセス。catalog.ymlに記載されたデータをもとに，trainとtestの縦幅を決める.train/val/testで異なるデータソースを用いるときは`InputNamesTable`を用いる。
 - `TargetUserPipelineParams`を利用してParamsを定義する。必要な引数は下記の通り。
   - `input_names`: 入力テーブル名(str)のリスト
   - `output_name` :出力テーブル名(str).
   - `sdf_func` : 定義済みの縦幅フィルター関数。
-    - 使える特殊引数は`data_type`. これを利用するこで共通の関数でtrain/testに対する異なる処理を実施できる。
+    - 使える特殊引数は`data_type`. これを利用することで共通の関数でtrain/testに対する異なる処理を実施できる。
+
+- `InputNamesTable`に関して
+  - train/val/testで異なるデータソースを利用する際に用いる
+  - 引数
+    - `train`: trainに用いるインプットデータ名(str)のリスト 
+    - `val`: valに用いるインプットデータ名(str)のリスト
+    - `test`: testに用いるインプットデータ名(str)のリスト
 
 以下が`TargetUserPipelineParams`の記述例
 ```
@@ -75,51 +79,170 @@ def filter_func(
 
     return target_sdf
 
-# TargetUserPipelineParamsの定義。
+from arise_pipeline.ml_pipeline.main_params import TargetUserPipelineParams
+# TargetUserPipelineParamsの定義。(単一のテーブルの場合)
 target_user_pipeline_params = TargetUserPipelineParams(
     input_names = ["input_table_name"],
     output_name = "output_table_name"
     sdf_func = filter_func
-
 )
 
+# 複数のデータソースを入力としたいとき ※以下はデータがtrain/val/testに分割済みの場合
+from arise_pipeline.ml_pipeline.sub_params import InputTamesTable
+
+input_names_splitted_train_val_test = InputNamesTable(
+    train=["sdf_train"]
+    val=["sdf_val"]
+    test=["sdf_test"]
+)
+
+target_user_pipeline_params = TargetUserPipelineParams(
+    input_names = input_names_splitted_train_val_test,
+    output_name = "output_table_name"
+    sdf_func = filter_func
+)
 ```
 
-#### FeaturePipelineParams
-- 特徴量データの前処理を行うプロセス。1つのデータソースに対して1つの前処理を対応付けて、各データソースに対してそれぞれ処理を記載する。そのため，生成したい特徴量データの数だけParamsを用意する。
+#### FeaturePipeline
+- 特徴量データの前処理を行うプロセス。1つのデータソースに対して1つの前処理を対応付けて、各データソースに対してそれぞれ処理を記載する。
+  - そのため，生成したい特徴量データの数だけParamsを用意する。
 - **Estimatorのような処理(trainデータのみにfitさせてvalデータやtestデータにはtransformさせるもの)については非該当。**ModelPipelineのPreprocessで記載する。
   - ここで記載するとtestデータを含めてfitすることとなり，リークとなってしまう。
-- 
+- `FeaturePipelineParams`を利用してParamsを定義する。必要な引数は下記の通り。
+  - `input_names`: 入力テーブル名(str)のリスト
+  - `output_name` :出力テーブル名(str).
+  - `join_keys`: 特徴量をジョインする際に用いる結合キーのリスト。
+  - `sdf_func` : 定義済みの縦幅フィルター関数。
+    - 使える特殊引数は`data_type`. これを利用することで関数の入力とするデータの種類(train/val/test)を参照できる. 事前分割なしならtrain/testのみ。
+  - `save` : アウトプットデータを保存するか。デフォルトは`True`
 
-#### LabelPipelineParams
-- ラベルデータの前処理を行うプロセス
-- 1つのデータソースに対して1つの前処理を対応付けるが、複数データソースは想定していない
+以下の記述は2つの`FeaturePipelineParams`を一つにまとめる場合の記載例。
+```
+from arise_pipeline.ml_pipeline.main_params import FeaturePipelineParams
 
+def make_feature_pipeline_params_all()
+    # 1つ目のFeaturePipelineParamsを作成する関数
+    def make_feature_pipeline_params1():
+        # 特徴量を作成する関数を定義する
+        def feature_sdf_func1(input_sdf1,input_sdf2) -> sdf:
+            output_sdf = ...#処理を記述
+            return output_sdf
 
-#### JoinPipelineParams
-- 各前処理済みのデータをマージするプロセス
-- ジョイン処理自体は実装する必要がなく、各データのマージキーのみ渡せばよい.
+        # FeaturePipelineParamsインスタンスを作成。ここでは2つのsdf(sdf_a,sdf_b)を入力としてfeature_sdf_func1で加工。
+        feature_pspipeline_params = FeaturePipelineParams(
+            input_names = ["df_a",”df_b”],
+            output_names = "df_ab_processed",
+            sdf_func=feature_sdf_func1,
+            join_keys = ["hoge"],
+        )
+
+        return feature_pspipeline_params
+
+    # 2つ目：上記と同じ流れで書く。テーブル名や処理内容は実際に扱うものに適宜変更。
+    def make_feature_pipeline_params2():
+        def feature_sdf_func2(input_sdf)-> sdf:
+            output_sdf = ...#処理を記述
+            return output_sdf
+        feature_pspipeline_params = FeaturePipelineParams(
+            input_names = ["df_c"],
+            output_names = "df_c_processed",
+            sdf_func=feature_sdf_func2,
+            join_keys = ["hoge"],
+        )
+
+    # 上記メソッドを実行し，feature_pipeline_paramsのリストを作成する。
+    feature_pipeline_params1 = make_feature_pipeline_params1()
+    feature_pipeline_params2 = make_feature_pipeline_params2()
+    
+    return [feature_pipeline_params1,feature_pipeline_params2]
+
+feature_pipeline_params_all = make_feature_pipeline_params_all()
+```
+#### LabelPipeline
+- ラベルデータの前処理を行うプロセス. catalog.ymlに記載されたデータをもとに，trainとtestのラベルを作成。
+- 入力に対して，まず`sdf_func`による加工がおこなわれその出力を`pspipeline`によって加工する。ゆえにエンコーディングは`pspipeline`にて行う。
+- `LabelPipelineParams`を利用してParamsを定義する。必要な引数は下記の通り。
+  - `input_names`: 入力テーブル名(str)のリスト
+  - `output_name` :出力テーブル名(str).
+  - `pspipeline`:ラベルデータに対する`PysparkPipeline`の処理内容。ラベルエンコーダーの利用を想定。
+    - ※`PysparkPipeline`はARISE-PIPELINEの内部でモデル学習をするために必要なPySparkのPipelineインスタンスのこと。
+  - `sdf_func` : 定義済みのラベルデータフィルター関数。
+    - 使える特殊引数は`data_type`. これを利用することで関数の入力とするデータの種類(train/val/test)を参照できる. 事前分割なしならtrain/testのみ。
+  
+  - `join_keys`:ラベルデータをジョインする際に用いる結合キーのリスト。
+  - `save`: アウトプットを保存するかどうか。デフォルトは`True`
+
+以下でStringIndexerを用いてラベルエンコーディングをするときの`LabelPipelineParams`を作成する記載例
+```
+from arise_pipeline.ml_pipeline.main_params import LabelPipelineParams
+from arise_pipeline.ml_pipeline.sub_params import PySparlPipelineParams
+from arise_pipeline.template.sdf_func impot void_sdf_func
+
+def make_label_pipeline_params() -> LabelPipelineParams
+
+    def build_label_pspipeline(labelCol:str, labelModelInputCol: str) -> Pipeline:
+        label_indexer = StringIndexer(InputCol=labelCol,outputCol=labelModelInputCol)
+        pspipeline=Pipeline(stages=[label_indexer])
+        return pspipeline
+
+    label_pspipeline= PysparkPipelineParams(
+        name="label_preprocess"
+        build_func=build_label_pspipeline,
+    )
+
+    label_pipeline_params = LabelPipelineParams(
+        input_names = ["sdf_labels”],
+        output_names = "sdf_labels”_processed",
+        sdf_func=void_sdf_func,#入力をそのまま返す関数。ARISE-PIPELINEのtemplateにある。
+        pspipeline=label_pspipeline
+        join_keys = ["hoge"],
+
+    )
+    return label_pspipeline_params
+
+label_pipeline_params = make_label_pipeline_params()
+```
+
+#### JoinPipeline
+- 縦幅，ラベル，特徴量のデータをマージするプロセス
+- ジョイン処理自体は実装する必要がない。定義済みのParamsの引数に渡してある`join_keys`をもとに結合が行われる。
 
 #### ModelPipeline
-- モデルの学習や予測を行うプロセス.
-- マージ済みのデータに対する追加の前処理やtrain/val分割なども実施.
+- モデルの学習や予測を行うプロセス.マージ済みのデータに対する追加の前処理やtrain/val分割なども実施.
+- これまでに定義したパイプラインで処理されたtrainデータとtestデータに対して，タグに応じて挙動がかわる。
+
+  - trainタグ：trainデータを用いてモデルの学習をする。
+    - まずデータをtrain/valに分割。任意だが`train_val_split_params`を渡して分割方法を指定できる
+    - (任意)train+valデータに対して前処理を実施。`preprocess_params`にて指定可。
+    - (任意)trainデータに対してのみ前処理を実施。`train_only_func`にて指定可。※オーバーサンプリングなどで利用。
+    - trainデータで学習し，train+valで予測する。`model_params`にて指定。
+  
+  - predictタグ：テストデータに対する予測を行う。
+    - (任意)testデータ前処理を実施。`preprocess_params`にて指定可。
+    - testデータに対して予測する。`model_params`に対応。
+- Optunaによるチューニングも可能。`preprocess_params`，`train_only_func`,`model_params`のパラメータをチューニングできる。
+- 
+- `ModelPipelineParams`を利用してParamsを定義する。必要な引数は下記の通り。
+  - `model_params`: モデル本体の内容(任意)
+  - `train_val_split_params`: 学習データのtrain/val分割方法(任意)
+  - `preprocess_params`: train+valデータおよびテストデータに適用する前処理(任意)
+  - `train_only_func`: trainデータのみに適用する前処理方法(任意)
+  - `use_optuna`:Optunaを利用するか否かのフラグ。TrueでOptunaが走るがその場合は`preprocess_params`，`train_only_func`,`model_params`,`optuna_params`の指定が必要。
+  - `optuna_params`:Optunaのパラメータ。
+
+以下にtrain/val分割を行い，PCA -> LogisticRegressionを行うときの記載例を記述。
+```
+
+
+```
 
 #### PostProcessPipeline
 - 評価、一定形式へのデータ整形などの後処理を行うプロセス.
 
-
-Config
-#### ModelPipelineParams
-
-#### PostPipelineParams
-
-
-
-
 ### Tag
 #### 概要
 「train」「predict」「evaluate」の3つがあり，指定したタグに応じて利用データと走るプロセスが変わる。
-そのため実行コマンドを叩く際に与えるタグを変えるだけで学習/予測/評価の切り替えが可能でそれぞれ個別にコードを書く必要がない。
+そのため後述する実行コマンドを叩く際に与えるタグを変えるだけで学習/予測/評価の切り替えが可能でそれぞれ個別にコードを書く必要がない。
 TagとParamsの関係性は以下の通り。なお，Tagの指定は単一でも複数でも可能。
 | Params名 | 役割 | train | predict| evaluate |
 | ---- | ---- |  ---- | ---- |  ---- |
