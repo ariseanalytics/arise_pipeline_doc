@@ -1,5 +1,5 @@
 # 本ページの立ち位置
-このページでは，ユーザーの準備物のConfigファイル(spark.yaml/mlflow.yaml )について記載する。
+このページでは，ユーザーの準備物のConfigファイル(spark.yaml/mlflow.yaml )にtついて記載する。
 なおこのページで紹介するファイルは任意ファイルであり，ARISE-PIPELINEの動作に必須のものではない。
 ![Configの立ち位置](config_spark_position.png)
 # Spark.yaml
@@ -36,21 +36,50 @@ additional_spark_conf:
 - experiment_args 
   -**必須**。 `mlflow.create_experiment`に渡される引数。`name`,`artifact_location`,`tags`の三つを渡すことができるが必須なのは`name`のみ。 
 - run_args
-  - **必須**。`mlflow.start_run`に渡される引数. 基本的にrun_nameとtagsを指定してあげればよい。
+  - 任意。`mlflow.start_run`に渡される引数. 基本的にrun_nameとtagsを指定してあげればよい。
 - log_parameters
-  - MLflowにおける`parameters`としてログを行う対象を記載、それぞれの項目についてはboolで指定する、ログの対象としては24年4月時点で以下
+  - 任意。MLflowにおける`parameters`としてログを行う対象を記載.それぞれの項目についてはboolで指定する。ログの対象としては24年4月時点で以下
     - parameters: parameters.yamlに記載してあるパラメータ。全選択もしくは部分的な選択どちらでもOK。
     - experiment_path: ARISE-PIPELINEが発行するexperiment_path
 - log_tags
-  - MLflowにおける`tags`としてログを行う対象を記載、ログの対象としては現時点で以下のものがある。
+  - 任意。MLflowにおける`tags`としてログを行う対象を記載、ログの対象としては24年4月時点で以下。
     - make_tags: `make`コマンドに用いたtrain/predict/evaluateのタグ
 - log_metrics
-  - `mlflow.log_metric`でログを行う対象を記載、ログの対象としては現時点で以下のものがある
+  - 任意。`mlflow.log_metric`でログを行う対象を記載、ログの対象としては24年4月時点で以下。
     - scores: PostProcess `PostPipeline`における`eval_func`の吐き出すスコア.train/val/testそれぞれに対して個別指定も可能。
     - nodes_status: ノードの成功数、エラー数など
 
 以下は記述例
 ```
+tracking_uri: http://192.168.1.0 #自チームの利用が承諾されているURIを入力する
 
+experiment_args:
+  name: test_experiment #実験の名前。
+  artifact_location:
+  tags:
 
+run_args:
+  run_id: #実行時に実験付与されるUUID
+  run_name:#実験の名前。run_id が指定されていない場合にのみ使用
+  tags: #実行時にタグして設定するキー(文字列)と値の辞書。
+    tag1:
+    tag2:
+  nested: False
+
+log_parameters:
+  parameters: #parametersファイル記載のものを書く。"parameters:True"と記載すると全てのパラメータについてロギング。
+    seed: True
+    train_ratio: True
+  experiment_path: ARISE-PIPELINEが発行するexperiment_path
+
+log_tags:
+    make_tags: True
+log_metrics:
+  scores: #PostPipelineのeval_funcで出職するスコア。"scores: True"と書けば全てのロギングする。
+    train: True
+    val: False
+    test: True
+  nodes_status: True
 ```
+
+実行後，`tracking_uri`に指定したURLにブラウザでアクセスすると上記の設定値が反映されたmlflowのWEBUIが表示される。
