@@ -30,7 +30,7 @@ Params名とそれぞれの役割は以下表のとおり。
 | 引数種別 | 役割 |
 | ---- | ---- |  
 | 必須引数 | 各functionで必ず定義する必要のある引数。<br>三つの引数のなかでは先頭に記載する必要があり，順番も守ること。
-| パラメータ引数 | parameters.yamlに記述した値を参照する際に用いる引数。<br>関数側でパラメータ名と同じ引数を定義すると，その値を引数として利用可能。必須引数より後ろで定義する。
+| パラメータ引数 | parameters.ymlに記述した値を参照する際に用いる引数。<br>関数側でパラメータ名と同じ引数を定義すると，その値を引数として利用可能。必須引数より後ろで定義する。
 | 特殊引数 | パイプラインのプロセス側でもっている固有の値を持つ引数。functionによって使えるものが変わる。<br>必須引数より後ろで定義する。
 
 下記の引数名は特殊引数に該当する。
@@ -38,6 +38,21 @@ Params名とそれぞれの役割は以下表のとおり。
 |-----|-----|-----|-----|
 | `data_type` | str| 関数に入力するデータの種類。値はtrain/val/testのいずれか。|TargetUserPipeline<br>FeaturePipeline<br>LabelPipeline<br>PostPipeline|
 | `output_path` | str |パイプラインの出力を保存するディレクトリパス。各関数の出力先として適切なレイヤーに対応する**サブディレクトリの絶対パスを記載する。**※アウトプットパスのルートではない|raw2inter<br>inter2primary<br>primary2primary<br>PostPipeline|
+
+なお，本ページではparameters.ymlとして下記項目を定義していると仮定し，各種Paramsの説明に入る。
+| 項目 |  詳細|
+|-----|-----|
+| seed | 乱数のシード|
+|train_ratio|train/valの比率 |
+|k_pca|PCAの次元数 ※例としてPCAを採用しておりこれ自体が必須ではない。|
+|target_data_type_value|データの種類|
+|featuresCols|特徴量の列名|
+|featuresVACol|前処理(VectorAssember)をした特徴量の列名|
+|featuersModelInputCol|モデルに入力する特徴量の列名|
+|labelCol|ラベルの列名|
+|labelModelInputCol|モデルに入力するラベルの列名|
+|predictionCol|予測結果を格納する列名|
+|metrics|評価指標(accurace, f1など)|
 
 #### PathParams
 MLパイプラインで利用するConfigファイルやアウトプットを設置するパスまわりを管理するParamsが`MlPathParams`である。
@@ -205,12 +220,12 @@ label_pipeline_params = make_label_pipeline_params()
 
 #### JoinPipeline
 - 縦幅，ラベル，特徴量のデータをマージするプロセス
-- ジョイン処理自体は実装する必要がない。定義済みのParamsの引数に渡してある`join_keys`をもとに結合が行われる。
+- 定義済みのParamsの引数に渡してある`join_keys`をもとに内部で結合が行われる。そのためこのパイプラインはParamsはなく，実装する必要はない。
 
 #### ModelPipeline
-- モデルの学習や予測を行うプロセス.マージ済みのデータに対する追加の前処理やtrain/val分割なども実施.
+- モデルの学習や予測を行うプロセス.
+- JoinPipelineにてマージされたデータに対する追加の前処理やtrain/val分割なども実施.
 - これまでに定義したパイプラインで処理されたtrainデータとtestデータに対して，タグに応じて挙動がかわる。
-
   - trainタグ：trainデータを用いてモデルの学習をする。
     - まずデータをtrain/valに分割。任意だが`train_val_split_params`を渡して分割方法を指定できる
     - (任意)train+valデータに対して前処理を実施。`preprocess_params`にて指定可。
@@ -221,7 +236,7 @@ label_pipeline_params = make_label_pipeline_params()
     - (任意)testデータ前処理を実施。`preprocess_params`にて指定可。
     - testデータに対して予測する。`model_params`に対応。
 - Optunaによるチューニングも可能。`preprocess_params`，`train_only_func`,`model_params`のパラメータをチューニングできる。
-- 
+  
 - `ModelPipelineParams`を利用してParamsを定義する。必要な引数は下記の通り。
   - `model_params`: モデル本体の内容(任意)
   - `train_val_split_params`: 学習データのtrain/val分割方法(任意)
@@ -232,18 +247,107 @@ label_pipeline_params = make_label_pipeline_params()
 
 以下にtrain/val分割を行い，PCA -> LogisticRegressionを行うときの記載例を記述。
 ```
+from pyspark.ml.feature import PCA
+from pyspark.ml.classification import LogisticRegression
+from arise_pipeline.ml_pipeline.main_params import ModelPipelineParams
+from arise_pipeline.ml_pipeline.sub_params import TrainValSplitParams
 
+#model_pipeline_paramsを作成するメソッド
+def make_model_pipeline_params() -> ModelPipelineParams:
+  # まずはデータを分割する関数を定義。
+  def split_func(train_val_sdf: sdf, train_ratio: float,seed:str) -> sdf:
+    train_val_sdf = train_val_sdf.withColumn(
+      "is_train", #カラム名はMLパイプラインの仕様上”is_train”にする。
+      F.when(F.rand(seed=seed)<=train_ratio, True).otherwise(
+        False
+      ), 
+    )
+    return train_val_sdf
 
+    train_val_split_params = TrainValSplitParams(
+      split_type= "hold-out",
+      func=split_func
+    )
+  # 次に前処理方法
+  def build_preprocess(
+    k_pca: int,
+    featuresVACol: str #parameters.ymlにて定義済み
+    featuresModelInputCol: #parameters.ymlにて定義済み。
+  ) -> Pipeline:
+    pca = PCA(k=k_pca, inputCol=featuresVACol, outputCol=featuresModelInputCol)
+    pspipeline = Pipeline(stages=[pca])
+    return pspipeline
+
+  preprocess_params = PysparkPipelineParams(name="model_preprocess",build_func=build_preprocess)
+
+  # モデルの処理
+  def build_model(
+    featuresModelInputCol: str,
+    labelModelInputCol: str,#parameters.ymlにて定義済みと仮定しているモデルに入力するラベル列名
+    predictionCol: str, #parameters.ymlにて定義済みと仮定している予測列名。
+  ) -> Pipeline
+  lr = LogisticRegression(
+    featuresModelInputCol=featuresModelInputCol
+    labelModelInputCol=labelModelInputCol
+    predictionCol=predictionCol
+  )
+  pspipeline = Pipeline(stages=[lr])
+  return pspipeline
+
+  model_params = PysparkPipelineParams(name="model_process",build_func=build_model)
+
+  # ModelPipelineのインスタンス
+  model_pipeline_params = ModelPipelineParams(
+    model_params=model_params,
+    train_val_split_params=train_val_split_params,
+    preprocess_params=preprocess_params,
+  )
+
+  return model_pipeline_params
+
+model_pipeline_params = make_model_pipeline_params()
 ```
 
-#### PostProcessPipeline
+#### PostPipeline
 - 評価、一定形式へのデータ整形などの後処理を行うプロセス.
+- `PostPipelineParams`を利用してParamsを定義する。必要な引数は下記の通り。
+  - `eval_func`: 必須。予測値のSparkDataFrame(valデータもしくはtestデータ)を受け取り，評価結果を辞書形式で返す関数。
+  - `post_func`: 任意。評価以外で実施したい後処理を実施したいときに利用。`PostFuncParams`のリストを渡す
 
+
+以下はparameters.ymlのmetricsを読み取って，`MuticlasssClassificationEvaluator`を適用する際の処理を記述
+```
+from pyspark.ml.evaluation import MuticlasssClassificationEvaluator
+from arise_pipeline.ml_pipeline.main_params import PostPipelineParams
+
+def make_post_pipeline_params():
+  # PostPipelineParamsに渡すeval_funcを定義
+  def eval_func(
+    evaluate_sdf: sdf,#予測値のSparkDataFrame
+    labelModelInputCol: str, # parametersで定義しているやつ。predictionCol/metricsも同様。
+    predictionCol: str,
+    metrics: dict[str, str]
+  ) -> dect[str, float]:
+    eval_results={}
+    for metric in metrics:
+        evaluator = MuticlasssClassificationEvaluator(
+          labelCol=labelModelInputCol,
+          predictionCol=predictionCol,
+          meticName=metric,
+        )
+    eval_results[metric]=evaluator.evaluate(evaluate_sdf)
+    return eval_results
+  
+  post_pipeline_params = PostPipelineParams(eval_func=eval_func)
+  return post_pipeline_params
+
+post_pipeline_params = make_post_pipeline_params()
+```
 ### Tag
 #### 概要
 「train」「predict」「evaluate」の3つがあり，指定したタグに応じて利用データと走るプロセスが変わる。
 そのため後述する実行コマンドを叩く際に与えるタグを変えるだけで学習/予測/評価の切り替えが可能でそれぞれ個別にコードを書く必要がない。
-TagとParamsの関係性は以下の通り。なお，Tagの指定は単一でも複数でも可能。
+TagとParamsの関係性は以下の通り。なお，Tagの指定は単一/複数いずれも可能。
 | Params名 | 役割 | train | predict| evaluate |
 | ---- | ---- |  ---- | ---- |  ---- |
 | TargetUserPipelineParams | データの縦幅を決定 |○|○| -|
@@ -273,7 +377,7 @@ TagとParamsの関係性は以下の通り。なお，Tagの指定は単一で�
   - post_piepline_params:
 
 
-'''
+```
 ml_pipeline = MlPipeline(
     path_params = path_params,
     target_user_pipeline_params=target_user_pipeline_params
@@ -282,8 +386,7 @@ ml_pipeline = MlPipeline(
     model_pipeline_params=model_pipeline_params
     post_piepline_params=post_piepline_params
 )
-
-'''
+```
 
 インスタンスを宣言した後，`make()`コマンドと`run()`コマンドを下記のように用いることでインスタンスの作成・実行を行うことができる。
 ```
