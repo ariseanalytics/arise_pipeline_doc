@@ -1,7 +1,7 @@
 
 # 本ページの立ち位置
 このページでは，ユーザーの準備物として必要なConfigのデータカタログ(catalog.yaml)について記載する。
-![Configの立ち位置](catalog_archetect.png)
+![Configの立ち位置](config_catalog_position.png)
 
 # データカタログとは
 ## 概要
@@ -21,7 +21,7 @@ catalog.yamlにはマートパイプライン/MLパイプラインのインプ�
 |save_args|データの保存時の挙動を指定。|
 
 書き方のサンプル(hoge_dataというデータを利用する場合)
-```
+```yaml
 hoge_data:
     type:arise_pipeline.datasets.spark.SparkDataSet
     filepath: data/hoge_data.parquet
