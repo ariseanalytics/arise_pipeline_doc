@@ -11,7 +11,7 @@
 ## parameters.yamlの記載方法
 - ここは一般的なyamlファイルに値を書くように記載する。
 - 一部特殊引数として指定してあるキーがあり，そちらを除けばキーの値は自由。特殊引数に関してはこちら(特殊引数のリンク)を参照。
-``` 
+``` yaml
 # 以下はparameters.ymlの記載例。
 train_ratio: 0.8 # train/valの比
 labelCol: target # 目的変数の列名
