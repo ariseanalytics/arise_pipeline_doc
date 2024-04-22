@@ -55,15 +55,16 @@ Params名(プロセス)とそれぞれの役割は以下表のとおり。ユー
 MLパイプラインで利用するConfigファイルやアウトプットを設置するパスまわりを管理するParamsが`MlPathParams`である。
 ※マートパイプラインには`MartPathParams`があるが現時点では中身は全く同じ。
 
-- マストな引数
-  - `output_root_path`：出力のルートを定義
-  - `output_subdir_order`：ルートパスの下層(各実験のアウトプットパス)の規則を定義
-- optionalな引数
-  - `project_path`：プロジェクトのルートパス。ここがベースで下記のパス達はこれの配下にある。任意ではあるがデータカタログで相対パスでfilepathを指定するときは必要。
-  - `conf_path`：yml(parametes, catalog, spark, mlflow etc)を格納しているディレクトリ名.
-  - `parameters_yaml_path`：conf配下のパラメータファイルを個別で指定したいときに利用
-  - `catalog_yaml_path`：conf配下のカタログファイルを個別で指定したいときに利用
-  - `spark_yaml_path`：conf配下のsparkファイルを個別で指定したいときに利用
+| 引数名 | 必須か否か|型 | 詳細|
+| ---- | ---- |---- |---- |
+| `output_root_path` | 必須|`Path`| 出力のルートを定義 |
+| `output_subdir_order` | 必須|`Path`|ルートパスの下層(各実験のアウトプットパス)の規則を定義|
+| `project_path` | 任意|`Path`|プロジェクトのルートパス。ここがベースで下記のパス達はこれの配下にある。任意ではあるがデータカタログで相対パスでfilepathを指定するときは必要。|
+| `conf_path` | 任意|`Path`|yml(parametes, catalog, spark, mlflow etc)を格納しているディレクトリ名.|
+| `parameters_yaml_path` | 任意|`Path`|conf配下のパラメータファイルを個別で指定したいときに利用|
+| `catalog_yaml_path` | 任意|`Path`|conf配下のカタログファイルを個別で指定したいときに利用 |
+| `spark_yaml_path` | 任意|`Path`|conf配下のsparkファイルを個別で指定したいときに利用 |
+
 ### TargetUserPipeline
 - データの縦幅を決定(filter)するプロセス。catalog.ymlに記載されたデータをもとに，trainとtestの縦幅を決める.train/val/testで異なるデータソースを用いるときは`InputNamesTable`を用いる。
 - `TargetUserPipelineParams`を利用してParamsを定義する。必要な引数は下記の通り。
@@ -72,21 +73,20 @@ MLパイプラインで利用するConfigファイルやアウトプットを設
   - `sdf_func` : 定義済みの縦幅フィルター関数。
     - 使える特殊引数は`data_type`. これを利用することで共通の関数でtrain/testに対する異なる処理を実施できる。
 
-- `InputNamesTable`に関して
-  - train/val/testで異なるデータソースを利用する際に用いる
-  - 引数
-    - `train`: trainに用いるインプットデータ名(str)のリスト 
-    - `val`: valに用いるインプットデータ名(str)のリスト
-    - `test`: testに用いるインプットデータ名(str)のリスト
+#### InputNamesTable
+`InputNamesTable`はtrain/val/testで異なるデータソースを用いるときに利用できる。引数は下記の通り。
+  - `train`: trainに用いるインプットデータ名(str)のリスト 
+  - `val`: valに用いるインプットデータ名(str)のリスト
+  - `test`: testに用いるインプットデータ名(str)のリスト
 
 以下が`TargetUserPipelineParams`の記述例
-```
+```python
 #まず縦幅フィルターを行う関数を定義
 def filter_func(
     input_sdf: sdf,
     target_data_value_type: dict[Literal["train", "test"], str],
-    data_type: Literal["train","test]:
-): -> sdf
+    data_type: Literal["train","test"]:
+  ): -> sdf
     target_sdf = #処理内容を記載。
 
     return target_sdf
@@ -129,10 +129,10 @@ target_user_pipeline_params = TargetUserPipelineParams(
   - `save` : アウトプットデータを保存するか。デフォルトは`True`
 
 以下の記述は2つの`FeaturePipelineParams`を一つにまとめる場合の記載例。
-```
+```python
 from arise_pipeline.ml_pipeline.main_params import FeaturePipelineParams
 
-def make_feature_pipeline_params_all()
+def make_feature_pipeline_params_all():
     # 1つ目のFeaturePipelineParamsを作成する関数
     def make_feature_pipeline_params1():
         # 特徴量を作成する関数を定義する
@@ -186,12 +186,12 @@ feature_pipeline_params_all = make_feature_pipeline_params_all()
 - 入力に対して，まず`sdf_func`による加工がおこなわれその出力を`pspipeline`によって加工する。ゆえにエンコーディングは`pspipeline`にて行う。
 - 
 以下でStringIndexerを用いてラベルエンコーディングをする`LabelPipelineParams`を作成する例を記載している。
-```
+```python
 from arise_pipeline.ml_pipeline.main_params import LabelPipelineParams
 from arise_pipeline.ml_pipeline.sub_params import PySparlPipelineParams
 from arise_pipeline.template.sdf_func impot void_sdf_func
 
-def make_label_pipeline_params() -> LabelPipelineParams
+def make_label_pipeline_params() -> LabelPipelineParams:
 
     def build_label_pspipeline(labelCol:str, labelModelInputCol: str) -> Pipeline:
         label_indexer = StringIndexer(InputCol=labelCol,outputCol=labelModelInputCol)
@@ -204,8 +204,8 @@ def make_label_pipeline_params() -> LabelPipelineParams
     )
 
     label_pipeline_params = LabelPipelineParams(
-        input_names = ["sdf_labels”],
-        output_names = "sdf_labels”_processed",
+        input_names = ["sdf_labels"],
+        output_names = "sdf_labels_processed",
         sdf_func=void_sdf_func,#入力をそのまま返す関数。ARISE-PIPELINEのtemplateにある。
         pspipeline=label_pspipeline
         join_keys = ["hoge"],
@@ -244,7 +244,7 @@ label_pipeline_params = make_label_pipeline_params()
   - `optuna_params`:Optunaのパラメータ。
 
 以下にtrain/val分割を行い，PCA -> LogisticRegressionを行うときの記載例を記述。
-```
+```python
 from pyspark.ml.feature import PCA
 from pyspark.ml.classification import LogisticRegression
 from arise_pipeline.ml_pipeline.main_params import ModelPipelineParams
@@ -314,7 +314,7 @@ model_pipeline_params = make_model_pipeline_params()
 
 
 以下はparameters.ymlのmetricsを読み取って，`MuticlasssClassificationEvaluator`を適用する際の処理を記述
-```
+```python
 from pyspark.ml.evaluation import MuticlasssClassificationEvaluator
 from arise_pipeline.ml_pipeline.main_params import PostPipelineParams
 
@@ -343,9 +343,20 @@ post_pipeline_params = make_post_pipeline_params()
 ```
 ## Tag
 ### 概要
-「train」「predict」「evaluate」の3つがあり，指定したタグに応じて利用データと走るプロセスが変わる。
-そのため後述する実行コマンドを叩く際に与えるタグを変えるだけで学習/予測/評価の切り替えが可能でそれぞれ個別にコードを書く必要がない。
-TagとParamsの関係性は以下の通り。なお，Tagの指定は単一/複数いずれも可能。
+- 「train」「predict」「evaluate」の3つがあり，指定したタグに応じて利用データと走るプロセスが変わる。
+  - trainタグはtrain+valに対して、他2つはtestデータに対して処理が行われる。
+- そのため後述する実行コマンドを叩く際に与えるタグを変えるだけで学習/予測/評価の切り替えが可能でそれぞれ個別にコードを書く必要がない。
+
+- タグとデータの対応関係は下記のとおり。それぞれのタグに応じて扱われるデータやラベルが必要か否か変動する。
+  
+|      |trainデータ | valデータ| testデータ |
+| ---- | ---- |  ---- | ---- | 
+|利用タグ |train | train| predict/evaluate |
+|用途 | モデルの学習| early stopping<br>ハイパラチューニング<br>スタッキング時のoof値算出 |本番運用時の予測値算出<br>精度算出
+|ラベルの要・不要 |必要 |必要 |なくても可|
+
+- タグとParamsの関係性は以下の通り。なお，パイプライン実行に指定するタグは単一/複数いずれも可能。
+
 | Params名 | 役割 | train | predict| evaluate |
 | ---- | ---- |  ---- | ---- |  ---- |
 | TargetUserPipelineParams | データの縦幅を決定 |○|○| -|
@@ -355,27 +366,19 @@ TagとParamsの関係性は以下の通り。なお，Tagの指定は単一/複�
 | ModelPipelineParams | モデルの学習・予測 |○|○| -|
 | PostPipelineParams | 評価・一定形式のデータ整形 |○|○| ○|
 
-### データとの対応関係
-タグとデータの対応関係は下記のとおり。それぞれのタグに応じて扱われるデータやラベルが必要か否か変動する。
-|      |trainデータ | valデータ| testデータ |
-| ---- | ---- |  ---- | ---- | 
-|利用タグ |train | train| predict/evaluate |
-|用途 | モデルの学習| early stopping<br>ハイパラチューニング<br>スタッキング時のoof値算出 |本番運用時の予測値算出<br>精度算出
-|ラベルの要・不要 |必要 |必要 |なくても可|
-
 ## インスタンス作成/実行
 `MlPipeline`クラスに対して上記のParams達を引数として渡してインスタンスとして宣言できる。
 
-|引数名 |詳細|
-| ---- | ---- | 
-|`path_params` |必須。`PathParams`を受け取る。 |
-|`target_user_pipeline_params`|任意。`TargetUserPipelineParams`を受け取る。|
-|`feature_pipeline_params_all`|任意。`FeaturePipelineParams`のリストを受け取る。|
-|`label_pipeline_params`|任意。`LabelPipelineParams`を受け取る|
-|`model_pipeline_params`|任意。`ModelPipeline`を受け取る。|
-|`post_piepline_params`|任意。`PostPipelineParams`を受け取る。|
+|引数名 |必須か否か|詳細|
+| ---- | ---- | ---- | 
+|`path_params` |必須|`PathParams`を受け取る。 |
+|`target_user_pipeline_params`|任意|`TargetUserPipelineParams`を受け取る。|
+|`feature_pipeline_params_all`|任意|`FeaturePipelineParams`のリストを受け取る。|
+|`label_pipeline_params`|任意|`LabelPipelineParams`を受け取る|
+|`model_pipeline_params`|任意|`ModelPipeline`を受け取る。|
+|`post_piepline_params`|任意|`PostPipelineParams`を受け取る。|
 
-```
+```python
 # 記載例
 ml_pipeline = MlPipeline(
     path_params = path_params,
@@ -394,8 +397,8 @@ ml_pipeline = MlPipeline(
 |train |trainデータに対して全パイプラインを実施 |
 |predict |testデータに対してModelPipelineまでを実施|
 |evaluate |testデータに対してPostPipelineを実施 |
-```
+```python
 ml_pipeline.make(tags=["train","predict","evaluate"]) #MLパイプラインインスタンスのビルド
 ml_pipeline.run() #MLパイプライン実行
 ```
-`run()`コマンドを実行しエラーがなければ，ParhParamsで指定したディレクトリに結果が保存される。
+`run()`コマンドを実行しエラーがなければ，`PathParams`で指定したディレクトリに結果が保存される。
