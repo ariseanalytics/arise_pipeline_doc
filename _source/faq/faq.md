@@ -35,10 +35,23 @@
   - `instance2 = ml_pipeline.make(tags=["evaluate"])`
   
 - 評価指標だけを見たいため保存処理を行ず実行時間を軽くしたい。join処理後のデータおよびモデルのアウトプットの保存をしない方法はあるか?
-  - 保存したくないデータにてカタログ上で`MemoryDataSet(copy_mode=”assign”)`としてください。
+  - 保存したくないデータにてカタログ上で`MemoryDataSet(copy_mode=”assign”)`としてください。詳しい書き方はこちら(Catalogのリンク)
   
 - `show`コマンドで表示した結果の順序は？
-  - 表示されたテキストの順番(上から下)です。
+  - `print(your_piepeline.show())`を実行すると下記のように入力・ノード名・出力名が表示されます。ノード名の表示順が実行順序です。下記例でいうと`feature_sdf_func`->`filter_train_test`-> ・・・という順番。
+```
+※RAIZINでコピペ予定
+#### Pipeline execution order ####
+Inputs: iris_features
+
+feature_sdf_func() -> []
+filter_train_test() -> []
+・
+・
+・
+Outputs： ・・・
+##########
+```
   
 - Joinキーを指定したいが，縦幅マートと他マートのキー名が異なるケースではrenameする必要があるか？
   - あります。join_keysに入力したリストを両方のマートでキーとして結合を行ってるので，列名変更が必要にです。
