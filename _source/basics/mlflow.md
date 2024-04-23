@@ -23,22 +23,21 @@ tracking_uri: http://192.168.1.0 #自チームの利用が承諾されているU
 
 experiment_args:
   name: test_experiment #実験の名前。
-  artifact_location:
-  tags:
+  artifact_location: s3a://yourbucketname/path/to/artifacts #任意
 
 run_args:
   run_id: #実行時に実験付与されるUUID
   run_name:#実験の名前。run_id が指定されていない場合にのみ使用
   tags: #実行時にタグして設定するキー(文字列)と値の辞書。
-    tag1:
-    tag2:
+    tag1: hoge 
+    tag2: fuga
   nested: False
 
 log_parameters:
   parameters: #parametersファイル記載のものを書く。"parameters:True"と記載すると全てのパラメータについてロギング。
     seed: True
     train_ratio: True
-  experiment_path: ARISE-PIPELINEが発行するexperiment_path
+  experiment_path: True # ARISE-PIPELINEが発行するexperiment_path
 
 log_tags:
     make_tags: True
