@@ -4,7 +4,8 @@
 ### 全体感
 以下がマートパイプラインの全体構成図となっている。ユーザーはConfig，Paramsの2つを準備する。
 ![マートパイプライン全体構成](martpipeline_architect.png)
-マートパイプラインには以下の三つのレイヤーが存在し，それらを組み合わせ加工結果をマートとして保存する。なお，raw層やintermediate層などのレイヤーに関しては[LayeredThinking](#Layered Thinking)および[分析プロセスのレイヤーとルール](#分析プロセスのレイヤーとルール)を参照。これら三つのレイヤーは`MartPipeline`クラスの引数として表現されており，それぞれ`MartPipelineParams`クラスを渡す必要がある。
+マートパイプラインには以下の三つのレイヤーが存在し，それらを組み合わせ加工結果をマートとして保存する。なお，raw層やintermediate層などのレイヤーに関しては[LayeredThinking](#layered-thinking)
+および[分析プロセスのレイヤーとルール](#分析プロセスのレイヤーとルール)を参照。これら三つのレイヤーは`MartPipeline`クラスの引数として表現されており，それぞれ`MartPipelineParams`クラスを渡す必要がある。
 | レイヤー名 | 立ち位置 | 役割|
 | ---- | ---- |---- |
 | raw2inter | 源泉データのコピー対する型付け・クレンジングを実施 | raw層のデータをを加工し，intermediate層へ設置 |
@@ -101,6 +102,7 @@ mart_pipeline.run() #マートパイプライン実行
 
 ## 参考リンク
 ### Layered Thinking
+
 - The importance of layered thinking in data engineering
 - https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71
 ### 分析プロセスのレイヤーとルール
