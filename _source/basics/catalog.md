@@ -20,20 +20,20 @@
 `filepath`は名の通り読み込みたいデータのパスを記述する。`type`は種類が多いので詳細を後述する。
 ### type
 ここではよく利用するであろう型に絞り詳細説明をする。
-指定できる全量を知りたい方は[カタログに登録できるデータタイプ一覧](#カタログに登録できるデータタイプ一覧)を参照。下記表が
+指定できる全量を知りたい方は[カタログに登録できるデータタイプ一覧](#カタログに登録できるデータタイプ一覧)を参照。
+下記表が利用が多いと思われるデータ型をまとめた表である。
 
-| 型名 | 用途 |
-|-----|-----|
-| `spark.sparkDataSet` | SparkDataFrame利用時に指定。前処理・特徴量生成・学習などメインはこちらになる。 |
-| `spark.PipelineDataSet` | SparkPypelineを登録するときに指定。 |
-| `memory.MemoryDataset ` | データをメモリ上に一時的に保存するためのデータセット。主にパイプライン内のノード間で中間結果を渡すときは出力を吐き出す必要がないときに利用。 |
-| `pandas.CSVDataSet` | PandasDataFrameでCSVを保存/ロードするときに利用時に指定. 主にPostrocessで出力結果を整加工したいときに利用。 |
-| `pandas.JSONDataSet` | PandasDataFrameでJSONを保存/ロードするときに利用。主にPostrocessで出力結果を整加工したいときに利用。 |
-| `pandas.ParquetDataSet` | PandasDataFrameでParquetを保存/ロードするときに利用。主にPostrocessで出力結果を整加工したいときに利用。 |
-| `pandas.ExcelDataSet` | PandasDataFrameでExcelを保存/ロードするときに利用。主にPostrocessで出力結果を整加工したいときに利用。 |
-| `json.JSONDataSet` | JSONをネイティブに利用したいときに指定。 |
+| 型名 | 詳細|用途 |
+|-----|-----|-----|
+| `spark.sparkDataSet` | SparkDataFrame型のデータをparquetで保存/ロード。| 前処理・特徴量生成・学習などメインのプロセスを行うとき| 
+| `spark.PipelineDataSet` | SparkPypeline型のデータを保存ロードする。 | 別のパラメータで実験したときのPipelineを利用|
+| `memory.MemoryDataset ` | データをメモリ上に一時的に保存するためのデータセット。|パイプライン内のノード間で中間結果を渡すときは出力を吐き出す必要がないときに利用。 |
+| `pandas.CSVDataSet` | PandasDataFrame型のデータをcsv形式で保存/ロード|特徴量重要度を保持したpandas.DataFrameをcsvで保存  |
+| `pandas.ParquetDataSet` | PandasDataFrame型のデータをparquet形式で保存/ロードするときに利用。 |膨大なデータを保存したいとき |
+| `pandas.ExcelDataSet` | PandasDataFrame型のデータをxlsx形式で保存/ロードするときに利用。 |分析で集計した結果を報告にそのまま利用したいとき |
 
-以下に，
+
+以下に，catalog.ymlへの記載例を示す。
 ```yaml
 hoge_data: # hoge_data.parquetというデータをSparkDataSetとして登録したいとき 
     type: arise_pipeline.datasets.spark.SparkDataSet # データの型。"arise_pipeline.datasets."もつけること
@@ -43,9 +43,9 @@ huga_data: # huga_dataというデータをMemoryDataSetとして登録したい
     data: arise_pipeline.datasets.MemoryDataset
     copy_mode: "assign"
 
-hoge_output: # huga_dataというデータをCSVで登録
+haga_data: # haga_dataというデータをCSVで登録
   type: arise_pipeline.datasets.pandas.CSVDataset
-  filepath: data/08_report/bikes.csv
+  filepath: data/02_intermediate/haga_data.csv
 
 ```
 #### 任意項目について
