@@ -1,24 +1,25 @@
-# MlPipelineクラスの便利機能
+# MlPipeline/MartPipelineクラスの便利機能
 
-`MlPipeline`クラスはパイプラインのビルド・実行だけでなく、いくつか便利な機能を提供している。今回はそちらを紹介する。基本的にはいずれのメソッドも`MlPipeline.make`によるビルドまでが済んでいることが利用の前提となるので注意。
+`MlPipeline`クラスおよび`MartPipeline`クラスはパイプラインのビルド・実行だけでなく、いくつか便利な機能を提供している。今回はそちらを紹介する。基本的にはいずれのメソッドも`make`によるビルドまでが済んでいることが利用の前提となるので注意。
+なお，本ページで紹介するメソッドは`MartPipeline`クラスのアトリビュートとして同様の呼び出し方で同様の結果が得られるようになっている。そのため"利用メソッド"セクションで記述しているものは`MlPipeline`クラス・`MartPipeline`クラスどちらでも利用可能。
 
 ## データカタログの確認
 ### できること
 - データカタログ（インプットやアウトプットデータのパスやデータ形式）の確認
 
 ### 利用メソッド
-- `MlPipeline.data_catalog`
-- `MlPipeline.inputs`
-- `MlPipeline.input_names`
-- `MlPipeline.outputs`
-- `MlPipeline.output_names`
+- `data_catalog`
+- `inputs`
+- `input_names`
+- `outputs`
+- `output_names`
 
 
 ### 説明
 パイプラインのデータカタログ情報（インプットやアウトプットがどのようなパスにどのようなファイル形式で登録されているか）を確認するためにいくつかメソッドが用意されている。成果物の確認やカタログファイルを編集する際の参考になると思われる。また、後述の、[データの読み込み](#データの読み込み)の際に、データセット名を確認するためにも役立つ。
 
 #### 全データの確認
-中間生成物含め、インプット・アウトプット全てのデータカタログ情報を取得するには、 `MlPipeline.data_catalog`を利用すればよい。
+中間生成物含め、インプット・アウトプット全てのデータカタログ情報を取得するには、 `data_catalog`を利用すればよい。
 
 - サンプルコード
 ```python
@@ -50,7 +51,7 @@ ml_pipeline.data_catalog()
 
 
 #### 特定のデータカタログの確認
-特定のデータのみ確認する場合は `MlPipeline.data_catalog`の引数`names`にデータセット名のリストを渡してあげればよい。(複数可)
+特定のデータのみ確認する場合は `data_catalog`の引数`names`にデータセット名のリストを渡してあげればよい。(複数可)
 
 - サンプルコード
 ```python
@@ -72,7 +73,7 @@ ml_pipeline.data_catalog(names=["iris_targets_processed_test"])
 
 
 #### インプットの確認
-インプットデータのみを確認したい場合は以下コマンドを叩けばよい。実行結果は`MlPipeline.data_catalog`と同様のフォーマットであるため割愛。
+インプットデータのみを確認したい場合は以下コマンドを叩けばよい。実行結果は`data_catalog`と同様のフォーマットであるため割愛。
 
 - サンプルコード
 ```python
@@ -113,7 +114,7 @@ ml_pipeline.output_names()
 -データカタログに登録されているデータの読み込み
 
 ### 利用メソッド
-- `MlPipeline.load`
+- `load`
 
 ### 説明
 インプットデータやアウトプットデータについて、データカタログ上のデータセット名を指定することで、読み込むことができる。これによって、成果物のデータフレームを直接操作して中身を確認したりすることができる。
@@ -137,9 +138,9 @@ test_scores
 - ビルドされたパイプライン・ノードの確認
 
 ### 利用メソッド
-- `MlPipeline.show`
-- `MlPipeline.nodes`
-- `MlPipeline.node_names`
+- `show`
+- `nodes`
+- `node_names`
 
 ### 説明
 ビルドされたパイプラインが実際にどのようなノードの集合で形成されているかを確認するためのメソッドがいくつかある。
@@ -209,15 +210,14 @@ ml_pipeline.node_names()
 
 ## SparkSessionの起動と停止
 ### できること
-- MlPipelineクラスを介したSparkSessionの起動や停止
+- SparkSessionの起動や停止
 
 ### 利用メソッド
-- `MlPipeline.init_spark_session`
-
-- `MlPipeline.stop_spark_session`
+- `init_spark_session`
+- `stop_spark_session`
 
 ### 説明
-`MlPipeline`クラスはSparkHookが有効になっている場合、`run`実行時に自動でSparkSessionを起動してくれ、終了時に自動で停止してくれるが、これを実行前後などで手動で起動・停止したい場合には`MlPipeline.init_spark_session`あるいは`MlPipeline.stop_spark_session`を叩けば良い。
+`MlPipeline`クラスはSparkHookが有効になっている場合、`run`実行時に自動でSparkSessionを起動してくれ、終了時に自動で停止してくれるが、これを実行前後などで手動で起動・停止したい場合には`init_spark_session`あるいは`stop_spark_session`を叩けば良い。
 
 #### 起動
 事前にビルドしておき、以下コマンドを叩けば、SparkSessionが起動する。
