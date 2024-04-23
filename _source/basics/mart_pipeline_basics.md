@@ -4,7 +4,7 @@
 ### 全体感
 以下がマートパイプラインの全体構成図となっている。ユーザーはConfig，Paramsの2つを準備する。
 ![マートパイプライン全体構成](martpipeline_architect.png)
-マートパイプラインには以下の三つのレイヤーが存在し，それらを組み合わせ加工結果をマートとして保存する。なお，raw層やintermediate層などのレイヤーに関しては(LayeredThinkingのリンク)と(コンフル記載のレイヤールール[https://ariseanalytics.atlassian.net/wiki/spaces/CADMAULTVWG/pages/2903474412])を参照。これら三つのレイヤーは`MartPipeline`クラスの引数として表現されており，それぞれ`MartPipelineParams`クラスを渡す必要がある。
+マートパイプラインには以下の三つのレイヤーが存在し，それらを組み合わせ加工結果をマートとして保存する。なお，raw層やintermediate層などのレイヤーに関しては[LayeredThinking](#Layered Thinking)および[分析プロセスのレイヤーとルール](#分析プロセスのレイヤーとルール)を参照。これら三つのレイヤーは`MartPipeline`クラスの引数として表現されており，それぞれ`MartPipelineParams`クラスを渡す必要がある。
 | レイヤー名 | 立ち位置 | 役割|
 | ---- | ---- |---- |
 | raw2inter | 源泉データのコピー対する型付け・クレンジングを実施 | raw層のデータをを加工し，intermediate層へ設置 |
@@ -98,3 +98,11 @@ mart_pipeline.run() #マートパイプライン実行
             └──08_reporting
 ```
 途中でエラーなく実行できれば，各種Paramsの引数`save=True`としたものに関して，ParhParamsで指定したディレクトリに結果が保存される。
+
+## 参考リンク
+### Layered Thinking
+- The importance of layered thinking in data engineering
+- https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71
+### 分析プロセスのレイヤーとルール
+- 分析プロセスのレイヤーとルール(ARISEのConfluence)
+- https://ariseanalytics.atlassian.net/wiki/spaces/CADMAULTVWG/pages/2903474412#%E3%83%AB%E3%83%BC%E3%83%AB%E8%A1%A8
