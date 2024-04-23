@@ -72,23 +72,17 @@ MLパイプラインで利用するConfigファイルやアウトプットを設
   - `output_name` :出力テーブル名(str).
   - `sdf_func` : 定義済みの縦幅フィルター関数。
     - 使える特殊引数は`data_type`. これを利用することで共通の関数でtrain/testに対する異なる処理を実施できる。
-
-#### InputNamesTable
-`InputNamesTable`はtrain/val/testで異なるデータソースを用いるときに利用できる。引数は下記の通り。
-  - `train`: trainに用いるインプットデータ名(str)のリスト 
-  - `val`: valに用いるインプットデータ名(str)のリスト
-  - `test`: testに用いるインプットデータ名(str)のリスト
-
-以下が`TargetUserPipelineParams`の記述例
+以下が`TargetUserPipelineParams`記述例
 ```python
 #まず縦幅フィルターを行う関数を定義
-def filter_func(
+def filter_train_test(
     input_sdf: sdf,
     target_data_value_type: dict[Literal["train", "test"], str],
     data_type: Literal["train","test"]:
   ): -> sdf
-    target_sdf = #処理内容を記載。
-
+    target_sdf = input_sdf.filter(
+      F.col("data_type") == target_data_value_type[data_type]
+    )
     return target_sdf
 
 from arise_pipeline.ml_pipeline.main_params import TargetUserPipelineParams
@@ -98,16 +92,23 @@ target_user_pipeline_params = TargetUserPipelineParams(
     output_name = "output_table_name"
     sdf_func = filter_func
 )
+```
+#### InputNamesTable
+`InputNamesTable`はtrain/val/testで異なるデータソースを用いるときに利用できる。引数は下記の通り。
+  - `train`: trainに用いるインプットデータ名(str)のリスト 
+  - `val`: valに用いるインプットデータ名(str)のリスト
+  - `test`: testに用いるインプットデータ名(str)のリスト
 
-# 複数のデータソースを入力としたいとき ※以下はデータがtrain/val/testに分割済みの場合
+以下が`InputNamesTable`記述例。
+```python
 from arise_pipeline.ml_pipeline.sub_params import InputTamesTable
-
+# データがtrain/val/testに分割済みの場合にInputNamesTableを利用する定義方法
 input_names_splitted_train_val_test = InputNamesTable(
     train=["sdf_train"]
     val=["sdf_val"]
     test=["sdf_test"]
 )
-
+ 
 target_user_pipeline_params = TargetUserPipelineParams(
     input_names = input_names_splitted_train_val_test,
     output_name = "output_table_name"
@@ -142,7 +143,7 @@ def make_feature_pipeline_params_all():
 
         # FeaturePipelineParamsインスタンスを作成。ここでは2つのsdf(sdf_a,sdf_b)を入力としてfeature_sdf_func1で加工。
         feature_pspipeline_params = FeaturePipelineParams(
-            input_names = ["df_a",”df_b”],
+            input_names = ["df_a","df_b"],
             output_names = "df_ab_processed",
             sdf_func=feature_sdf_func1,
             join_keys = ["hoge"],
@@ -152,9 +153,15 @@ def make_feature_pipeline_params_all():
 
     # 2つ目：上記と同じ流れで書く。テーブル名や処理内容は実際に扱うものに適宜変更。
     def make_feature_pipeline_params2():
-        def feature_sdf_func2(input_sdf)-> sdf:
-            output_sdf = ...#処理を記述
+        def feature_sdf_func2(input_sdf)-> sdf:#例として特定のカラムが閾値以上なら1,そうでないなら0とする関数を定義
+            output_sdf = input_sdf.withColumn(
+              new_column_name, 
+              F.when(F.col(column_name) >= threshold, 1).otherwise(
+                0
+              )
+            )
             return output_sdf
+            
         feature_pspipeline_params = FeaturePipelineParams(
             input_names = ["df_c"],
             output_names = "df_c_processed",
