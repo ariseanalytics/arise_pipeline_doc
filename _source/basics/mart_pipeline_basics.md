@@ -101,10 +101,12 @@ mart_pipeline.run() #マートパイプライン実行
 途中でエラーなく実行できれば，各種Paramsの引数`save=True`としたものに関して，ParhParamsで指定したディレクトリに結果が保存される。
 
 ## 参考リンク
+本ページ上部の[全体感](#全体感)で記載していたリンク集を記載。URLとタイトルを閲覧したい方はググっていただけると。
 ### Layered Thinking
-
-- The importance of layered thinking in data engineering
-- https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71
+- ページタイトル： The importance of layered thinking in data engineering
+- 媒体：towardsdatascience
+- URL：https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71
 ### 分析プロセスのレイヤーとルール
-- 分析プロセスのレイヤーとルール(ARISEのConfluence)
-- https://ariseanalytics.atlassian.net/wiki/spaces/CADMAULTVWG/pages/2903474412#%E3%83%AB%E3%83%BC%E3%83%AB%E8%A1%A8
+- ページタイトル：分析プロセスのレイヤーとルール
+- 媒体：ARISEのConfluence
+- URL：https://ariseanalytics.atlassian.net/wiki/spaces/CADMAULTVWG/pages/2903474412#%E3%83%AB%E3%83%BC%E3%83%AB%E8%A1%A8
