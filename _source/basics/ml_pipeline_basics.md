@@ -106,7 +106,7 @@ target_user_pipeline_params = TargetUserPipelineParams(
 | `test` | `Optional[list[str]]`|testに用いるインプットデータ名(str)のリスト|
 
 
-以下が`InputNamesTable`を利用してParamsを定義するときの記述例。こちらはデータがtrain/val/testにすでに分割済みとなっているそれぞれの
+以下が`InputNamesTable`を利用してParamsを定義するときの記述例。こちらはデータがtrain/val/testにすでに分割済みとなっているときにそれらを入力とする。
 ```python
 from arise_pipeline.ml_pipeline.sub_params import InputTamesTable
 # データがtrain/val/testに分割済みの場合にInputNamesTableを利用する定義方法
@@ -134,10 +134,9 @@ target_user_pipeline_params = TargetUserPipelineParams(
 | `val` | `Optional[str]`|valに用いるインプットデータ名(str)のリスト|
 | `test` | `Optional[str]`|testに用いるインプットデータ名(str)のリスト|
 
-以下が`OutputNamesTable`を利用してParamsを定義するときの記述例。こちらではtrain/val/testでそれぞれデータを個別に出力する。
+以下が`OutputNamesTable`を利用してParamsを定義するときの記述例。train/val/testでそれぞれデータを個別に出力する。
 ```python
 from arise_pipeline.ml_pipeline.sub_params import OutputNamesTable
-# データがtrain/val/testに分割済みの場合にInputNamesTableを利用する定義方法
 output_names_splitted_train_val_test = OutputNamesTable(
     train=["sdf_output_train"]
     val=["sdf_output_val"]
