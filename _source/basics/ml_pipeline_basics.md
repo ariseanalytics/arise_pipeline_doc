@@ -33,23 +33,23 @@ Params名(プロセス)とそれぞれの役割は以下表のとおり。ユー
 下記の引数名は特殊引数に該当する。
 | 引数名 | 型 | 詳細| 利用可能なパイプライン|
 |-----|-----|-----|-----|
-| `data_type` | str| 関数に入力するデータの種類。値はtrain/val/testのいずれか。|TargetUserPipeline<br>FeaturePipeline<br>LabelPipeline<br>PostPipeline|
-| `output_path` | str |パイプラインの出力を保存するディレクトリパス。各関数の出力先として適切なレイヤーに対応する**サブディレクトリの絶対パスを記載する。**※アウトプットパスのルートではない|raw2inter<br>inter2primary<br>primary2primary<br>PostPipeline|
+| `data_type` | `str`| 関数に入力するデータの種類。値はtrain/val/testのいずれか。|`TargetUserPipeline`<br>`FeaturePipeline`<br>`LabelPipeline`<br>`PostPipeline`|
+| `output_path` | `str` |パイプラインの出力を保存するディレクトリパス。<br>各関数の出力先として適切なレイヤーに対応する**サブディレクトリの絶対パスを記載する。**※アウトプットパスのルートではない|`raw2inter`<br>`inter2primary`<br>`primary2primary`<br>`PostPipeline`|
 
 なお，本ページではparameters.ymlとして下記項目を定義していると仮定し，各種Paramsの説明に入る。
 | 項目 |  詳細|
 |-----|-----|
-| seed | 乱数のシード|
-|train_ratio|train/valの比率 |
-|k_pca|PCAの次元数 ※例としてPCAを採用しておりこれ自体が必須ではない。|
-|target_data_type_value|データの種類|
-|featuresCols|特徴量の列名|
-|featuresVACol|前処理(VectorAssember)をした特徴量の列名|
-|featuersModelInputCol|モデルに入力する特徴量の列名|
-|labelCol|ラベルの列名|
-|labelModelInputCol|モデルに入力するラベルの列名|
-|predictionCol|予測結果を格納する列名|
-|metrics|評価指標(accurace, f1など)|
+| `seed` | 乱数のシード|
+|`train_ratio`|train/valの比率 |
+|`k_pca`|PCAの次元数 ※例としてPCAを採用しておりこれ自体が必須ではない。|
+|`target_data_type_value`|データの種類|
+|`featuresCols`|特徴量の列名|
+|`featuresVACol`|前処理(VectorAssember)をした特徴量の列名|
+|`featuersModelInputCol`|モデルに入力する特徴量の列名|
+|`labelCol`|ラベルの列名|
+|`labelModelInputCol`|モデルに入力するラベルの列名|
+|`predictionCol`|予測結果を格納する列名|
+|`metrics`|評価指標(accuracy, f1など)|
 
 ### PathParams
 MLパイプラインで利用するConfigファイルやアウトプットを設置するパスまわりを管理するParamsが`MlPathParams`である。
@@ -68,10 +68,13 @@ MLパイプラインで利用するConfigファイルやアウトプットを設
 ### TargetUserPipeline
 - データの縦幅を決定(filter)するプロセス。catalog.ymlに記載されたデータをもとに，trainとtestの縦幅を決める.train/val/testで異なるデータソースを用いるときは`InputNamesTable`を用いる。
 - `TargetUserPipelineParams`を利用してParamsを定義する。必要な引数は下記の通り。
-  - `input_names`: 入力テーブル名(str)のリスト
-  - `output_name` :出力テーブル名(str).
-  - `sdf_func` : 定義済みの縦幅フィルター関数。
-    - 使える特殊引数は`data_type`. これを利用することで共通の関数でtrain/testに対する異なる処理を実施できる。
+
+| 引数名 |型 | 詳細|
+| ---- | ---- |---- |
+| `input_names` | `List[str]`or`InputNamesTable` | データカタログで定義した入力テーブル名(str)のリスト。<br>train/val/testで異なるデータを使うときは`InputNamesTable`クラスを利用する|
+| `output_name` | `str`or`OutputNamesTable`|出力のテーブル名。これにデータタイプに応じた接頭辞("_train"や"_test")がつく。<br>`OutputNamesTable`を使うと独自の名前をつけられる。|
+| `sdf_func` | `Callable`|`input_names`のデータを受け取り，`output_names`として出力を生成する関数。<br>使える特殊引数は`data_type`. これを利用することで共通の関数でtrain/testに対する異なる処理を実施できる。|
+
 以下が`TargetUserPipelineParams`記述例
 ```python
 #まず縦幅フィルターを行う関数を定義
@@ -95,18 +98,22 @@ target_user_pipeline_params = TargetUserPipelineParams(
 ```
 #### InputNamesTable
 `InputNamesTable`はtrain/val/testで異なるデータソースを用いるときに利用できる。引数は下記の通り。
-  - `train`: trainに用いるインプットデータ名(str)のリスト 
-  - `val`: valに用いるインプットデータ名(str)のリスト
-  - `test`: testに用いるインプットデータ名(str)のリスト
 
-以下が`InputNamesTable`記述例。
+| 引数名 |型 | 詳細|
+| ---- | ---- |---- |
+| `train` | `Optional[list[str]]`| trainに用いるインプットデータ名(str)のリスト |
+| `val` | `Optional[list[str]]`|valに用いるインプットデータ名(str)のリスト|
+| `test` | `Optional[list[str]]`|testに用いるインプットデータ名(str)のリスト|
+
+
+以下が`InputNamesTable`を利用してParamsを定義するときの記述例。こちらはデータがtrain/val/testにすでに分割済みとなっているそれぞれの
 ```python
 from arise_pipeline.ml_pipeline.sub_params import InputTamesTable
 # データがtrain/val/testに分割済みの場合にInputNamesTableを利用する定義方法
 input_names_splitted_train_val_test = InputNamesTable(
-    train=["sdf_train"]
-    val=["sdf_val"]
-    test=["sdf_test"]
+    train=["sdf_input_train"]
+    val=["sdf_input_val"]
+    test=["sdf_input_test"]
 )
  
 target_user_pipeline_params = TargetUserPipelineParams(
@@ -115,6 +122,35 @@ target_user_pipeline_params = TargetUserPipelineParams(
     sdf_func = filter_func
 )
 ```
+上記コードを実行すると，
+
+#### OutputNamesTable
+- `OutputNamesTable`はアウトプットデータ名をデータタイプ(train/val/test)と対応付けるクラス。
+- train/val/testとで個別のデータとして出力したいときの利用を想定している。引数は下記の通り。
+
+| 引数名 |型 | 詳細|
+| ---- | ---- |---- |
+| `train` | `Optional[str]`| trainに用いるインプットデータ名(str)のリスト |
+| `val` | `Optional[str]`|valに用いるインプットデータ名(str)のリスト|
+| `test` | `Optional[str]`|testに用いるインプットデータ名(str)のリスト|
+
+以下が`OutputNamesTable`を利用してParamsを定義するときの記述例。こちらではtrain/val/testでそれぞれデータを個別に出力する。
+```python
+from arise_pipeline.ml_pipeline.sub_params import OutputNamesTable
+# データがtrain/val/testに分割済みの場合にInputNamesTableを利用する定義方法
+output_names_splitted_train_val_test = OutputNamesTable(
+    train=["sdf_output_train"]
+    val=["sdf_output_val"]
+    test=["sdf_output_test"]
+)
+ 
+target_user_pipeline_params = TargetUserPipelineParams(
+    input_names = ["input_table_name"],
+    output_name = output_names_splitted_train_val_test,
+    sdf_func = filter_func
+)
+```
+
 
 ### FeaturePipeline
 - 特徴量データの前処理を行うプロセス。1つのデータソースに対して1つの前処理を対応付けて、各データソースに対してそれぞれ処理を記載する。
@@ -122,12 +158,14 @@ target_user_pipeline_params = TargetUserPipelineParams(
 - Estimatorのような処理(trainデータのみにfitさせてvalデータやtestデータにはtransformさせるもの)については非該当。ModelPipelineのPreprocessで記載する。
   - ここで記載するとtestデータを含めてfitすることとなり，リークとなってしまう。
 - `FeaturePipelineParams`を利用してParamsを定義する。必要な引数は下記の通り。
-  - `input_names`: 入力テーブル名(str)のリスト
-  - `output_name` :出力テーブル名(str).
-  - `join_keys`: 特徴量をジョインする際に用いる結合キーのリスト。
-  - `sdf_func` : 定義済みの特徴量作成関数。
-    - 使える特殊引数は`data_type`. これを利用することで関数の入力とするデータの種類(train/val/test)を参照できる. 事前分割なしならtrain/testのみ。
-  - `save` : アウトプットデータを保存するか。デフォルトは`True`
+
+| 引数名 |型 | 詳細|
+| ---- | ---- |---- |
+| `input_names` | `List[str]`or`InputNamesTable` | データカタログで定義した入力テーブル名(str)のリスト。<br>train/val/testで異なるデータを使うときは`InputNamesTable`クラスを利用する|
+| `output_name` | `str`or`OutputNamesTable`|出力のテーブル名。これにデータタイプに応じた接頭辞("_train"や"_test")がつく。<br>`OutputNamesTable`を使うと独自の名前をつけられる。|
+| `sdf_func` | `Callable`|`input_names`のデータを受け取り，`output_names`として出力を生成する関数。<br>使える特殊引数は`data_type`. これを利用することで共通の関数でtrain/testに対する異なる処理を実施できる。|
+| `join_keys` | `List[str]`|特徴量をジョインする際に用いる結合キーのリスト。|
+| `save` | `bool`| アウトプットデータを保存するか。デフォルトは`True`|
 
 以下の記述は2つの`FeaturePipelineParams`を一つにまとめる場合の記載例。
 ```python
@@ -137,14 +175,14 @@ def make_feature_pipeline_params_all():
     # 1つ目のFeaturePipelineParamsを作成する関数
     def make_feature_pipeline_params1():
         # 特徴量を作成する関数を定義する
-        def feature_sdf_func1(input_sdf1,input_sdf2) -> sdf:
-            output_sdf = ...#処理を記述
+        def feature_sdf_func1(input_sdf) -> sdf:#例としてinput_sdfの全カラムを100倍する関数
+            output_sdf = input_sdf * 100
             return output_sdf
 
-        # FeaturePipelineParamsインスタンスを作成。ここでは2つのsdf(sdf_a,sdf_b)を入力としてfeature_sdf_func1で加工。
+        # FeaturePipelineParamsインスタンスを作成。ここではsdf_aを入力としてfeature_sdf_func1で加工。
         feature_pspipeline_params = FeaturePipelineParams(
-            input_names = ["df_a","df_b"],
-            output_names = "df_ab_processed",
+            input_names = ["sdf_a"],
+            output_names = "sdf_a_processed",
             sdf_func=feature_sdf_func1,
             join_keys = ["hoge"],
         )
@@ -163,8 +201,8 @@ def make_feature_pipeline_params_all():
             return output_sdf
             
         feature_pspipeline_params = FeaturePipelineParams(
-            input_names = ["df_c"],
-            output_names = "df_c_processed",
+            input_names = ["sdf_b"],
+            output_names = "sdf_b_processed",
             sdf_func=feature_sdf_func2,
             join_keys = ["hoge"],
         )
@@ -179,19 +217,19 @@ feature_pipeline_params_all = make_feature_pipeline_params_all()
 ```
 ### LabelPipeline
 - ラベルデータの前処理を行うプロセス. catalog.ymlに記載されたデータをもとに，trainとtestのラベルを作成。
-
 - `LabelPipelineParams`を利用してParamsを定義する。必要な引数は下記の通り。
-  - `input_names`: 入力テーブル名(str)のリスト
-  - `output_name` :出力テーブル名(str).
-  - `pspipeline`:ラベルデータに対する`PysparkPipeline`の処理内容。ラベルエンコーダーの利用を想定。
-    - ※`PysparkPipeline`はARISE-PIPELINEの内部でモデル学習をするために必要なPySparkのPipelineインスタンスのこと。
-  - `sdf_func` : 定義済みのラベルデータフィルター関数。
-    - 使える特殊引数は`data_type`. これを利用することで関数の入力とするデータの種類(train/val/test)を参照できる. 事前分割なしならtrain/testのみ。
-  
-  - `join_keys`:ラベルデータをジョインする際に用いる結合キーのリスト。
-  - `save`: アウトプットを保存するかどうか。デフォルトは`True`
+
+| 引数名 |型 | 詳細|
+| ---- | ---- |---- |
+| `input_names` | `List[str]`or`InputNamesTable` | データカタログで定義した入力テーブル名(str)のリスト。<br>train/val/testで異なるデータを使うときは`InputNamesTable`クラスを利用する|
+| `output_name` | `str`or`OutputNamesTable`|出力のテーブル名。これにデータタイプに応じた接頭辞("_train"や"_test")がつく。<br>`OutputNamesTable`を使うと独自の名前をつけられる。|
+|`pspipeline`|`Optional[PysparkPipelineParams]`|ラベルデータに対する`PysparkPipeline`の処理内容。ラベルエンコーダーの利用を想定。<br>※`PysparkPipeline`はARISE-PIPELINEの内部でモデル学習をするために必要なPySparkのPipelineインスタンスのこと。|
+| `sdf_func` | `Callable`|定義済みのラベルデータフィルター関数。。<br>使える特殊引数は`data_type`. これを利用することで共通の関数でtrain/testに対する異なる処理を実施できる。事前分割なしならtrain/testのみ。|
+| `join_keys` | `List[str]`|特徴量をジョインする際に用いる結合キーのリスト。|
+| `save` | `bool`| アウトプットデータを保存するか。デフォルトは`True`|
+
 - 入力に対して，まず`sdf_func`による加工がおこなわれその出力を`pspipeline`によって加工する。ゆえにエンコーディングは`pspipeline`にて行う。
-- 
+  
 以下でStringIndexerを用いてラベルエンコーディングをする`LabelPipelineParams`を作成する例を記載している。
 ```python
 from arise_pipeline.ml_pipeline.main_params import LabelPipelineParams
@@ -243,12 +281,18 @@ label_pipeline_params = make_label_pipeline_params()
 - Optunaによるチューニングも可能。`preprocess_params`，`train_only_func`,`model_params`のパラメータをチューニングできる。
   
 - `ModelPipelineParams`を利用してParamsを定義する。必要な引数は下記の通り。
-  - `model_params`: モデル本体の内容(任意)
-  - `train_val_split_params`: 学習データのtrain/val分割方法(任意)
-  - `preprocess_params`: train+valデータおよびテストデータに適用する前処理(任意)
-  - `train_only_func`: trainデータのみに適用する前処理方法(任意)
-  - `use_optuna`:Optunaを利用するか否かのフラグ。TrueでOptunaが走るがその場合は`preprocess_params`，`train_only_func`,`model_params`,`optuna_params`の指定が必要。
-  - `optuna_params`:Optunaのパラメータ。
+
+
+| 引数名 |型 | 詳細|
+| ---- | ---- |---- |
+| `model_params` | `Optional[PysparkPipelineParams]` |モデル本体の内容(任意)|
+| `train_val_split_params` | `Optional[TrainValSplitParams]`|学習データのtrain/val分割方法(任意)|
+|`preprocess_params`|`Optional[PysparkPipelineParams]`|train+valデータおよびテストデータに適用する前処理(任意)|
+| `train_only_func` | `Optional[Callable]`|trainデータのみに適用する前処理方法(任意)|
+| `use_optuna` | `bool`|Optunaを利用するか否かのフラグ。TrueでOptunaが走るがその場合は`preprocess_params`，`train_only_func`,`model_params`,`optuna_params`の指定が必要。|
+| `optuna_params` | `Optional[OptunaParams]`| Optunaのパラメータ。|
+
+
 
 以下にtrain/val分割を行い，PCA -> LogisticRegressionを行うときの記載例を記述。
 ```python
@@ -319,6 +363,10 @@ model_pipeline_params = make_model_pipeline_params()
   - `eval_func`: 必須。予測値のSparkDataFrame(valデータもしくはtestデータ)を受け取り，評価結果を辞書形式で返す関数。
   - `post_func`: 任意。評価以外で実施したい後処理を実施したいときに利用。`PostFuncParams`のリストを渡す
 
+| 引数名 |型 | 詳細|
+| ---- | ---- |---- |
+| `eval_func` | `Callable` |予測値のSparkDataFrame(valデータもしくはtestデータ)を受け取り，評価結果を辞書形式で返す関数(必須)|
+| `post_func` | `Optional[list[PostFuncParams]]`|評価以外で実施したい後処理を実施したいときに利用。`PostFuncParams`のリストを渡す(任意)|
 
 以下はparameters.ymlのmetricsを読み取って，`MuticlasssClassificationEvaluator`を適用する際の処理を記述
 ```python
@@ -366,12 +414,12 @@ post_pipeline_params = make_post_pipeline_params()
 
 | Params名 | 役割 | train | predict| evaluate |
 | ---- | ---- |  ---- | ---- |  ---- |
-| TargetUserPipelineParams | データの縦幅を決定 |○|○| -|
-| FeaturePipelineParams | 特徴量データの前処理 |○|○| -|
-| LabelPipelineParams | ラベルデータの前処理 |○|○| -|
-| JoinPipelineParams | 縦幅・特徴量・ラベルの結合 |○|○| -|
-| ModelPipelineParams | モデルの学習・予測 |○|○| -|
-| PostPipelineParams | 評価・一定形式のデータ整形 |○|○| ○|
+| `TargetUserPipelineParams` | データの縦幅を決定 |○|○| -|
+| `FeaturePipelineParams` | 特徴量データの前処理 |○|○| -|
+| `LabelPipelineParams` | ラベルデータの前処理 |○|○| -|
+| `JoinPipelineParams`| 縦幅・特徴量・ラベルの結合 |○|○| -|
+| `ModelPipelineParams` | モデルの学習・予測 |○|○| -|
+| `PostPipelineParams` | 評価・一定形式のデータ整形 |○|○| ○|
 
 ## インスタンス作成/実行
 `MlPipeline`クラスに対して上記のParams達を引数として渡してインスタンスとして宣言できる。
