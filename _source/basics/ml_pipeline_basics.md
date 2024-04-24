@@ -34,7 +34,7 @@ Params名(プロセス)とそれぞれの役割は以下表のとおり。ユー
 | 引数名 | 型 | 詳細| 利用可能なパイプライン|
 |-----|-----|-----|-----|
 | `data_type` | `str`| 関数に入力するデータの種類。値はtrain/val/testのいずれか。|`TargetUserPipeline`<br>`FeaturePipeline`<br>`LabelPipeline`<br>`PostPipeline`|
-| `output_path` | `str` |パイプラインの出力を保存するディレクトリパス。<br>各関数の出力先として適切なレイヤーに対応する**サブディレクトリの絶対パスを記載する。**※アウトプットパスのルートではない|`raw2inter`<br>`inter2primary`<br>`primary2primary`<br>`PostPipeline`|
+| `output_path` | `str` |パイプラインの出力を保存するディレクトリパス。<br>各関数の出力先として適切なレイヤーに対応する**サブディレクトリの絶対パスを記載する。アウトプットパスのルートではない。**※こちらはユーザーが指定できる引数ではなく，内部で各レイヤーの出力先を決めるために利用している。|`raw2inter`<br>`inter2primary`<br>`primary2primary`<br>`PostPipeline`|
 
 なお，本ページではparameters.ymlとして下記項目を定義していると仮定し，各種Paramsの説明に入る。
 | 項目 |  詳細|
