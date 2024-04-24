@@ -79,7 +79,8 @@ MLパイプラインで利用するConfigファイルやアウトプットを設
   - 例えば`input_names`が`list[str]`で`output_names`が`OutputNamesTable`や`input_names`が`InputNamesTable`で`output_names`が`str`のような形でも可。
   
 
-以下が`TargetUserPipelineParams`記述例
+以下が`TargetUserPipelineParams`記述例。
+train/val/testの分割した際に，出力は`output_table_name_{data_type}`という形で接尾辞が付いた値となる。※data_typeにはtrain/val/testのいずれかが入る。
 ```python
 #まず縦幅フィルターを行う関数を定義
 def filter_train_test(
@@ -109,8 +110,8 @@ target_user_pipeline_params = TargetUserPipelineParams(
 | `val` | `Optional[list[str]]`|valに用いるインプットデータ名(str)のリスト|
 | `test` | `Optional[list[str]]`|testに用いるインプットデータ名(str)のリスト|
 
-
-以下が`InputNamesTable`を利用してParamsを定義するときの記述例。こちらはデータがtrain/val/testにすでに分割済みとなっているときにそれらを入力とする。
+以下が`InputNamesTable`を利用してParamsを定義するときの記述例。
+前述の記述例ではデータソースが単一で分割実施前であるのに対し，こちらはtrain/val/testにすでに分割された個別のデータソースを入力している。
 ```python
 from arise_pipeline.ml_pipeline.sub_params import InputTamesTable
 # データがtrain/val/testに分割済みの場合にInputNamesTableを利用する定義方法
@@ -137,7 +138,9 @@ target_user_pipeline_params = TargetUserPipelineParams(
 | `val` | `Optional[str]`|valに用いるインプットデータ名(str)のリスト|
 | `test` | `Optional[str]`|testに用いるインプットデータ名(str)のリスト|
 
-以下が`OutputNamesTable`を利用してParamsを定義するときの記述例。train/val/testでそれぞれデータを個別に出力する。
+以下が`OutputNamesTable`を利用してParamsを定義するときの記述例。
+出力としてユーザーが定義した出力値をtrain/val/testに対応づけるように吐き出す。
+
 ```python
 from arise_pipeline.ml_pipeline.sub_params import OutputNamesTable
 output_names_splitted_train_val_test = OutputNamesTable(
@@ -152,7 +155,6 @@ target_user_pipeline_params = TargetUserPipelineParams(
     sdf_func = filter_func
 )
 ```
-
 
 ### FeaturePipeline
 - 特徴量データの前処理を行うプロセス。1つのデータソースに対して1つの前処理を対応付けて、各データソースに対してそれぞれ処理を記載する。
