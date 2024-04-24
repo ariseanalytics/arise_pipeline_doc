@@ -75,6 +75,10 @@ MLパイプラインで利用するConfigファイルやアウトプットを設
 | `output_name` | `str\|OutputNamesTable`|出力のテーブル名。これにデータタイプに応じた接頭辞("_train"や"_test")がつく。<br>`OutputNamesTable`を使うと独自の名前をつけられる。|
 | `sdf_func` | `Callable`|`input_names`のデータを受け取り，`output_names`として出力を生成する関数。<br>使える特殊引数は`data_type`. これを利用することで共通の関数でtrain/testに対する異なる処理を実施できる。|
 
+- ※`input_names`と`output_names`については属性値が`HogeNamesTable`となるように内部で処理しているので，いずれの型の組み合わせも利用可能。
+  - 例えば`input_names`が`list[str]`で`output_names`が`OutputNamesTable`や`input_names`が`InputNamesTable`で`output_names`が`str`のような形でも可。
+  
+
 以下が`TargetUserPipelineParams`記述例
 ```python
 #まず縦幅フィルターを行う関数を定義
