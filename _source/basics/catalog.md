@@ -23,14 +23,15 @@
 指定できる全量を知りたい方は[カタログに登録できるデータタイプ一覧](#カタログに登録できるデータタイプ一覧)を参照。
 下記表が利用が多いと思われるデータ型をまとめた表である。
 
-| 型名 | 詳細|用途 |
+| 型名 | 用途|具体例 |
 |-----|-----|-----|
-| `spark.sparkDataSet` | SparkDataFrame型のデータをparquetで保存/ロード。| 前処理・特徴量生成・学習などメインのプロセスを行うとき| 
-| `spark.PipelineDataSet` | SparkPypeline型のデータを保存ロードする。 | 別のパラメータで実験したときのPipelineを利用|
-| `memory.MemoryDataset ` | データをメモリ上に一時的に保存するためのデータセット。|パイプライン内のノード間で中間結果を渡すときは出力を吐き出す必要がないときに利用。 |
+| `spark.sparkDataSet` | SparkDataFrame型のデータをparquetで保存/ロード。|ModelPipelineの予測値を保存する。| 
+| `spark.PipelineDataSet` | SparkPipeline型のデータを保存/ロードする。 | 学習済みのモデルを新しいテストデータで予測し精度検証する。|
+| `memory.MemoryDataset ` | データをメモリ上に一時的に保存するためのデータセット。|通常なら保存するが他の実装箇所が機能するかを確認するために一時的に保存を停止しエラーがないことをチェックする。 |
 | `pandas.CSVDataSet` | PandasDataFrame型のデータをcsv形式で保存/ロード|特徴量重要度を保持したpandas.DataFrameをcsvで保存  |
-| `pandas.ParquetDataSet` | PandasDataFrame型のデータをparquet形式で保存/ロードするときに利用。 |膨大なデータを保存したいとき |
-| `pandas.ExcelDataSet` | PandasDataFrame型のデータをxlsx形式で保存/ロードするときに利用。 |分析で集計した結果を報告にそのまま利用したいとき |
+| `pandas.ParquetDataSet` | PandasDataFrame型のデータをparquet形式で保存/ロードするときに利用。 |集計結果をマートとして保存 |
+| `pandas.ExcelDataSet` | PandasDataFrame型のデータをxlsx形式で保存/ロードするときに利用。 |顧客報告用に集計した結果を資料に利用。|
+| `pandas.JSONDataSet` | PandasDataFrame型のデータをJSON形式で保存/ロードするときに利用。 |`PostPipeline`の`eval_func`で出力した評価結果(辞書形式)を保存 |
 
 
 以下に，catalog.ymlへの記載例を示す。
