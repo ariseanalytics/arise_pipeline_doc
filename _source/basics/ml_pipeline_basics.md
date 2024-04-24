@@ -71,8 +71,8 @@ MLパイプラインで利用するConfigファイルやアウトプットを設
 
 | 引数名 |型 | 詳細|
 | ---- | ---- |---- |
-| `input_names` | `List[str]`or`InputNamesTable` | データカタログで定義した入力テーブル名(str)のリスト。<br>train/val/testで異なるデータを使うときは`InputNamesTable`クラスを利用する|
-| `output_name` | `str`or`OutputNamesTable`|出力のテーブル名。これにデータタイプに応じた接頭辞("_train"や"_test")がつく。<br>`OutputNamesTable`を使うと独自の名前をつけられる。|
+| `input_names` | `List[str]\|InputNamesTable` | データカタログで定義した入力テーブル名(str)のリスト。<br>train/val/testで異なるデータを使うときは`InputNamesTable`クラスを利用する|
+| `output_name` | `str\|OutputNamesTable`|出力のテーブル名。これにデータタイプに応じた接頭辞("_train"や"_test")がつく。<br>`OutputNamesTable`を使うと独自の名前をつけられる。|
 | `sdf_func` | `Callable`|`input_names`のデータを受け取り，`output_names`として出力を生成する関数。<br>使える特殊引数は`data_type`. これを利用することで共通の関数でtrain/testに対する異なる処理を実施できる。|
 
 以下が`TargetUserPipelineParams`記述例
@@ -122,7 +122,6 @@ target_user_pipeline_params = TargetUserPipelineParams(
     sdf_func = filter_func
 )
 ```
-上記コードを実行すると，
 
 #### OutputNamesTable
 - `OutputNamesTable`はアウトプットデータ名をデータタイプ(train/val/test)と対応付けるクラス。
@@ -160,8 +159,8 @@ target_user_pipeline_params = TargetUserPipelineParams(
 
 | 引数名 |型 | 詳細|
 | ---- | ---- |---- |
-| `input_names` | `List[str]`or`InputNamesTable` | データカタログで定義した入力テーブル名(str)のリスト。<br>train/val/testで異なるデータを使うときは`InputNamesTable`クラスを利用する|
-| `output_name` | `str`or`OutputNamesTable`|出力のテーブル名。これにデータタイプに応じた接頭辞("_train"や"_test")がつく。<br>`OutputNamesTable`を使うと独自の名前をつけられる。|
+| `input_names` | `List[str]\|InputNamesTable` ` | データカタログで定義した入力テーブル名(str)のリスト。<br>train/val/testで異なるデータを使うときは`InputNamesTable`クラスを利用する|
+| `output_name` | `str\|OutputNamesTable`|出力のテーブル名。これにデータタイプに応じた接頭辞("_train"や"_test")がつく。<br>`OutputNamesTable`を使うと独自の名前をつけられる。|
 | `sdf_func` | `Callable`|`input_names`のデータを受け取り，`output_names`として出力を生成する関数。<br>使える特殊引数は`data_type`. これを利用することで共通の関数でtrain/testに対する異なる処理を実施できる。|
 | `join_keys` | `List[str]`|特徴量をジョインする際に用いる結合キーのリスト。|
 | `save` | `bool`| アウトプットデータを保存するか。デフォルトは`True`|
@@ -220,8 +219,8 @@ feature_pipeline_params_all = make_feature_pipeline_params_all()
 
 | 引数名 |型 | 詳細|
 | ---- | ---- |---- |
-| `input_names` | `List[str]`or`InputNamesTable` | データカタログで定義した入力テーブル名(str)のリスト。<br>train/val/testで異なるデータを使うときは`InputNamesTable`クラスを利用する|
-| `output_name` | `str`or`OutputNamesTable`|出力のテーブル名。これにデータタイプに応じた接頭辞("_train"や"_test")がつく。<br>`OutputNamesTable`を使うと独自の名前をつけられる。|
+| `input_names` | `List[str]\|InputNamesTable` | データカタログで定義した入力テーブル名(str)のリスト。<br>train/val/testで異なるデータを使うときは`InputNamesTable`クラスを利用する|
+| `output_name` | `str\|OutputNamesTable`|出力のテーブル名。これにデータタイプに応じた接頭辞("_train"や"_test")がつく。<br>`OutputNamesTable`を使うと独自の名前をつけられる。|
 |`pspipeline`|`Optional[PysparkPipelineParams]`|ラベルデータに対する`PysparkPipeline`の処理内容。ラベルエンコーダーの利用を想定。<br>※`PysparkPipeline`はARISE-PIPELINEの内部でモデル学習をするために必要なPySparkのPipelineインスタンスのこと。|
 | `sdf_func` | `Callable`|定義済みのラベルデータフィルター関数。。<br>使える特殊引数は`data_type`. これを利用することで共通の関数でtrain/testに対する異なる処理を実施できる。事前分割なしならtrain/testのみ。|
 | `join_keys` | `List[str]`|特徴量をジョインする際に用いる結合キーのリスト。|
