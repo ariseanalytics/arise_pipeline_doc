@@ -15,7 +15,7 @@
 | `run_args` | 任意 | `mlflow.start_run`に渡される引数. 基本的に`run_name`と`tags`を指定してあげればよい。|
 | `log_parameters` | 任意 |MLflowにおける`parameters`としてログを行う対象を記載.それぞれの項目についてはboolで指定する。ログの対象としてはV1.0.0では下記のとおり<br>・`parameters`: parameters.yamlに記載してあるパラメータ。全選択もしくは部分的な選択どちらでもOK。<br>・`experiment_path`: ARISE-PIPELINEが発行するexperiment_path|
 | `log_tags` | 任意 | MLflowにおける`tags`としてログを行う対象を記載. ログの対象としてはV1.0.0では下記のとおり<br>・`make_tags`: `make`コマンドに用いたtrain/predict/evaluateのタグ|
-| `log_metrics` | 任意 | `mlflow.log_metric`でログを行う対象を記載. ログの対象としてはV1.0.0では下記のとおり<br>・`scores`: `PostPipeline`における`eval_func`の吐き出すスコア.train/val/testそれぞれに対して個別指定も可能。<br>`nodes_status`: ノードの成功数、エラー数など|
+| `log_metrics` | 任意 | `mlflow.log_metric`でログを行う対象を記載. ログの対象としてはV1.0.0では下記のとおり<br>・`scores`: `PostPipeline`における`eval_func`の吐き出すスコア.train/val/testそれぞれに対して個別指定も可能。<br>・`nodes_status`: ノードの成功数、エラー数など|
 
 以下は記述例
 ```yaml
@@ -27,7 +27,7 @@ experiment_args:
 
 run_args:
   run_id: #実行時に実験付与されるUUID
-  run_name:#実験の名前。run_id が指定されていない場合にのみ使用
+  run_name: #実験の名前。run_id が指定されていない場合にのみ使用
   tags: #実行時にタグして設定するキー(文字列)と値の辞書。
     tag1: hoge 
     tag2: fuga

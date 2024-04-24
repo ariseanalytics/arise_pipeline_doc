@@ -35,7 +35,7 @@
 
 以下に，catalog.ymlへの記載例を示す。
 ```yaml
-hoge_data: # hoge_data.parquetというデータをSparkDataSetとして登録したいとき 
+hoge_data: # hoge_dataというデータをSparkDataSetとして登録したいとき 
     type: arise_pipeline.datasets.spark.SparkDataSet # データの型。"arise_pipeline.datasets."もつけること
     filepath: data/01_raw/hoge_data.parquet # データのパス
 
@@ -43,7 +43,7 @@ huga_data: # huga_dataというデータをMemoryDataSetとして登録したい
     data: arise_pipeline.datasets.MemoryDataset
     copy_mode: "assign"
 
-haga_data: # haga_dataというデータをCSVで登録
+haga_data: # haga_dataというデータをCSVDataSetで登録したいとき
   type: arise_pipeline.datasets.pandas.CSVDataset
   filepath: data/02_intermediate/haga_data.csv
 
